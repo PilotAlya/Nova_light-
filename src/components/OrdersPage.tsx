@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef } from "react";
-import { ClipboardList, ArrowLeft, Plus, Store, MessageCircle, Calendar, MapPin, Clock, CheckCircle2, Scissors, Layers, Package, Search, History, X, ArrowRight, ChevronRight, ListChecks, Briefcase, CreditCard, FileText, HelpCircle } from "lucide-react";
+import { ClipboardList, ArrowLeft, Plus, Store, MessageCircle, Calendar, MapPin, Clock, CheckCircle2, Scissors, Layers, Package, Search, History, X, ArrowRight, ChevronRight, ListChecks, Briefcase, CreditCard, FileText, HelpCircle, Trash2 } from "lucide-react";
 import { fetchOrders, createOrder, updateOrder, Order } from "../api/orders";
 
 interface OrdersPageProps {
@@ -180,13 +180,33 @@ const OrdersPage: React.FC<OrdersPageProps> = ({ onNavigateCalculator, currentUs
   };
 
   const advanceStatus = async (order: Order, toStatus: string) => {
-    await updateOrder(order.id, { status: toStatus, changed_by: currentUserName || "Администратор" });
-    refreshOrders();
+    setOrders(prev => prev.map(o => o.id === order.id ? { ...o, status: toStatus } : o));
+    // Save to localStorage fallback
+    const saved = localStorage.getItem("nova_light_orders_fallback");
+    const fallback = saved ? JSON.parse(saved) : [];
+    const idx = fallback.findIndex((o: any) => o.id === order.id);
+    if (idx >= 0) fallback[idx] = { ...fallback[idx], status: toStatus };
+    localStorage.setItem("nova_light_orders_fallback", JSON.stringify(fallback));
+    try { await updateOrder(order.id, { status: toStatus, changed_by: currentUserName || "Администратор" }); } catch {}
+  };
+
+  const deleteOrder = async (orderId: number) => {
+    if (!confirm("Удалить заказ?")) return;
+    setOrders(prev => prev.filter(o => o.id !== orderId));
+    const saved = localStorage.getItem("nova_light_orders_fallback");
+    const fallback = saved ? JSON.parse(saved) : [];
+    localStorage.setItem("nova_light_orders_fallback", JSON.stringify(fallback.filter((o: any) => o.id !== orderId)));
+    try { await (await import("../api/orders")).deleteOrder(orderId); } catch {}
   };
 
   const advanceStatusById = async (orderId: number, toStatus: string) => {
     setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: toStatus } : o));
-    await updateOrder(orderId, { status: toStatus, changed_by: currentUserName || "Администратор" });
+    const saved = localStorage.getItem("nova_light_orders_fallback");
+    const fallback = saved ? JSON.parse(saved) : [];
+    const idx = fallback.findIndex((o: any) => o.id === orderId);
+    if (idx >= 0) fallback[idx] = { ...fallback[idx], status: toStatus };
+    localStorage.setItem("nova_light_orders_fallback", JSON.stringify(fallback));
+    try { await updateOrder(orderId, { status: toStatus, changed_by: currentUserName || "Администратор" }); } catch {}
   };
 
   const editingOrder = orders.find(o => o.id === editId);
@@ -536,7 +556,7 @@ const OrdersPage: React.FC<OrdersPageProps> = ({ onNavigateCalculator, currentUs
                               onDragStart={() => setDraggedOrderId(order.id)}
                               onClick={() => openEdit(order)}
                               className={`bg-black/40 rounded-xl p-4 border transition-all cursor-pointer hover:bg-black/60 ${
-                                isOverdue ? "border-rose-500/30" : "border-white/5"
+                                isOverdue ? "border-rose-500/60 bg-rose-950/30 shadow-[0_0_20px_rgba(239,68,68,0.25)]" : "border-white/5"
                               } ${draggedOrderId === order.id ? "opacity-40" : ""}`}
                             >
                               <div className="flex items-start justify-between mb-2">
@@ -595,20 +615,29 @@ const OrdersPage: React.FC<OrdersPageProps> = ({ onNavigateCalculator, currentUs
                               <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-2 text-[10px]">
                                   <Calendar size={10} className="text-slate-500" />
-                                  <span className={`font-bold ${isOverdue ? "text-rose-400" : dLeft <= 3 ? "text-amber-400" : "text-slate-400"}`}>
-                                    {dLeft <= 0 ? `× ${Math.abs(dLeft)} дн.` : `${dLeft} дн.`}
+                                  <span className={`font-bold ${isOverdue ? "text-rose-400 animate-pulse" : dLeft <= 3 ? "text-amber-400" : "text-slate-400"}`}>
+                                    {dLeft <= 0 ? `× ${Math.abs(dLeft)} дн. ПРОСРОЧЕНО` : `${dLeft} дн.`}
                                   </span>
                                 </div>
-                                {getNextStatus(order.status) && (
+                                <div className="flex items-center gap-1">
                                   <button
-                                    onClick={(e) => { e.stopPropagation(); advanceStatus(order, getNextStatus(order.status)!); }}
-                                    className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-bold bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 hover:bg-indigo-500/30 transition-all"
+                                    onClick={(e) => { e.stopPropagation(); deleteOrder(order.id); }}
+                                    className="p-1 rounded-lg text-rose-400/60 hover:text-rose-400 hover:bg-rose-500/10 transition-all"
+                                    title="Удалить"
                                   >
-                                    {statusMeta[getNextStatus(order.status)!]?.icon}
-                                    {statusMeta[getNextStatus(order.status)!]?.label}
-                                    <ArrowRight size={10} />
+                                    <Trash2 size={12} />
                                   </button>
-                                )}
+                                  {getNextStatus(order.status) && (
+                                    <button
+                                      onClick={(e) => { e.stopPropagation(); advanceStatus(order, getNextStatus(order.status)!); }}
+                                      className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-bold bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 hover:bg-indigo-500/30 transition-all"
+                                    >
+                                      {statusMeta[getNextStatus(order.status)!]?.icon}
+                                      {statusMeta[getNextStatus(order.status)!]?.label}
+                                      <ArrowRight size={10} />
+                                    </button>
+                                  )}
+                                </div>
                               </div>
                             </div>
                           );
@@ -629,7 +658,7 @@ const OrdersPage: React.FC<OrdersPageProps> = ({ onNavigateCalculator, currentUs
                 const currentIdx = LDSP_STATUSES.indexOf(order.status);
                 const isOverdue = dLeft <= 0 && order.status !== "выдан";
                 return (
-                  <div key={order.id} className={`glass-panel rounded-2xl p-5 border transition-all hover:bg-white/5 ${isOverdue ? "border-rose-500/30 bg-rose-500/[0.03]" : "border-white/5"}`}>
+                  <div key={order.id} className={`glass-panel rounded-2xl p-5 border transition-all hover:bg-white/5 ${isOverdue ? "border-rose-500/60 bg-rose-950/20 shadow-[0_0_20px_rgba(239,68,68,0.2)]" : "border-white/5"}`}>
                     <div className="flex items-center justify-between mb-3">
                       <div className="flex items-center gap-3 flex-1 min-w-0 cursor-pointer" onClick={() => openEdit(order)}>
                         <h3 className="text-sm font-bold text-white truncate">{formatOrderId(order.id)}</h3>
@@ -644,8 +673,8 @@ const OrdersPage: React.FC<OrdersPageProps> = ({ onNavigateCalculator, currentUs
                       </div>
                       <div className="flex items-center gap-3 shrink-0">
                         {order.status !== "выдан" && (
-                          <span className={`text-xs font-bold ${isOverdue ? "text-rose-400" : dLeft <= 3 ? "text-amber-400" : "text-emerald-400"}`}>
-                            {dLeft <= 0 ? `× ${Math.abs(dLeft)} дн.` : `${dLeft} дн.`}
+                          <span className={`text-xs font-bold ${isOverdue ? "text-rose-400 animate-pulse" : dLeft <= 3 ? "text-amber-400" : "text-emerald-400"}`}>
+                            {dLeft <= 0 ? `× ${Math.abs(dLeft)} дн. ПРОСРОЧЕНО` : `${dLeft} дн.`}
                           </span>
                         )}
                         <span className="text-sm font-bold text-white">{order.total_cost.toLocaleString("ru-RU")} ₽</span>
@@ -691,6 +720,13 @@ const OrdersPage: React.FC<OrdersPageProps> = ({ onNavigateCalculator, currentUs
                         <span className="flex items-center gap-1"><Calendar size={10} /> {formatDate(deadline)}</span>
                       </div>
                       <div className="flex items-center gap-1.5">
+                        <button
+                          onClick={(e) => { e.stopPropagation(); deleteOrder(order.id); }}
+                          className="p-1.5 rounded-lg text-rose-400/60 hover:text-rose-400 hover:bg-rose-500/10 transition-all"
+                          title="Удалить"
+                        >
+                          <Trash2 size={14} />
+                        </button>
                         {getNextStatus(order.status) && (
                           <button
                             onClick={(e) => { e.stopPropagation(); advanceStatus(order, getNextStatus(order.status)!); }}

@@ -56,12 +56,12 @@ export const KanbanCard: React.FC<KanbanCardProps> = ({ task, lead, onStatusChan
 
   const cardStyle: React.CSSProperties = {
     backgroundColor: 'var(--bg-card)',
-    border: overdue ? '1px solid rgba(239,68,68,0.3)' : '1px solid var(--border-medium)',
+    border: overdue ? '1px solid rgba(239,68,68,0.6)' : '1px solid var(--border-medium)',
     borderRadius: 'var(--radius-md)',
     padding: '16px',
     marginBottom: '12px',
     cursor: isDragging ? 'grabbing' : 'grab',
-    boxShadow: isDragging ? 'var(--shadow-drag)' : overdue ? '0 0 12px rgba(239,68,68,0.15)' : 'var(--shadow-sm)',
+    boxShadow: isDragging ? 'var(--shadow-drag)' : overdue ? '0 0 20px rgba(239,68,68,0.3), 0 0 40px rgba(239,68,68,0.1)' : 'var(--shadow-sm)',
     transform: isDragging ? 'scale(1.02) rotate(1deg)' : 'scale(1)',
     transition: 'var(--transition-smooth)',
     userSelect: 'none',
@@ -135,12 +135,14 @@ export const KanbanCard: React.FC<KanbanCardProps> = ({ task, lead, onStatusChan
               alignItems: 'center',
               gap: '3px',
               fontSize: '10px',
-              fontWeight: 600,
-              padding: '2px 6px',
-              borderRadius: '4px',
-              backgroundColor: 'rgba(239,68,68,0.12)',
+              fontWeight: 700,
+              padding: '3px 8px',
+              borderRadius: '6px',
+              backgroundColor: 'rgba(239,68,68,0.2)',
               color: '#f87171',
-              border: '1px solid rgba(239,68,68,0.2)',
+              border: '1px solid rgba(239,68,68,0.4)',
+              textTransform: 'uppercase' as const,
+              letterSpacing: '0.05em',
             }}>
               <AlertTriangle size={10} />
               {risk}
