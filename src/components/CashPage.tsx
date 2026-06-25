@@ -107,23 +107,51 @@ const CashPage: React.FC<CashPageProps> = ({ currentUserName }) => {
     if (!shift || totalAmount <= 0) return;
     const formattedItems = formatItemsNotes(items);
     const notesText = formattedItems ? `${formattedItems}${addForm.notes ? ` · ${addForm.notes}` : ""}` : addForm.notes;
-    await addEntry({
+    const newEntry: CashEntry = {
+      id: Date.now(),
       shift_id: shift.id,
-      type: addForm.type,
+      type: addForm.type as "sale" | "expense",
       amount: totalAmount,
-      method: addForm.method,
+      method: addForm.method as "cash" | "cashless",
       category: addForm.type === "expense" ? addForm.category : "",
       notes: notesText,
+      created_at: new Date().toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" }),
+    };
+    // Optimistic update
+    setShift(prev => {
+      if (!prev) return prev;
+      const entries = [...(prev.entries || []), newEntry];
+      const cashTotal = entries.filter(e => e.type === "sale" && e.method === "cash").reduce((s, e) => s + e.amount, 0);
+      const cashlessTotal = entries.filter(e => e.type === "sale" && e.method === "cashless").reduce((s, e) => s + e.amount, 0);
+      const expenseTotal = entries.filter(e => e.type === "expense").reduce((s, e) => s + e.amount, 0);
+      return { ...prev, entries, cash_total: cashTotal, cashless_total: cashlessTotal, expense_total: expenseTotal };
     });
+    // Save to localStorage
+    const saved = localStorage.getItem("nova_light_cash_entries");
+    const fallback = saved ? JSON.parse(saved) : [];
+    fallback.push(newEntry);
+    localStorage.setItem("nova_light_cash_entries", JSON.stringify(fallback));
     setAddForm({ type: "sale", method: "cash", category: "Другое", notes: "" });
     setItems([{ id: 1, name: "", price: 0 }]);
     setShowAddForm(false);
-    loadToday();
+    try { await addEntry({ shift_id: shift.id, type: addForm.type, amount: totalAmount, method: addForm.method, category: addForm.type === "expense" ? addForm.category : "", notes: notesText }); } catch {}
   };
 
   const handleDeleteEntry = async (id: number) => {
-    await deleteEntry(id);
-    loadToday();
+    setShift(prev => {
+      if (!prev) return prev;
+      const entries = (prev.entries || []).filter(e => e.id !== id);
+      const cashTotal = entries.filter(e => e.type === "sale" && e.method === "cash").reduce((s, e) => s + e.amount, 0);
+      const cashlessTotal = entries.filter(e => e.type === "sale" && e.method === "cashless").reduce((s, e) => s + e.amount, 0);
+      const expenseTotal = entries.filter(e => e.type === "expense").reduce((s, e) => s + e.amount, 0);
+      return { ...prev, entries, cash_total: cashTotal, cashless_total: cashlessTotal, expense_total: expenseTotal };
+    });
+    const saved = localStorage.getItem("nova_light_cash_entries");
+    if (saved) {
+      const fallback = JSON.parse(saved).filter((e: any) => e.id !== id);
+      localStorage.setItem("nova_light_cash_entries", JSON.stringify(fallback));
+    }
+    try { await deleteEntry(id); } catch {}
   };
 
   const entries = shift?.entries || [];
