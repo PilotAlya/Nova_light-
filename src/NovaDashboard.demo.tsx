@@ -1625,17 +1625,31 @@ export default function NovaLightDashboard() {
             </div>
             <div>
               <label className="text-[11px] uppercase tracking-[0.24em] text-slate-500">Ключ доступа</label>
-              <input
-                type="password"
-                value={loginKey}
-                onChange={(e) => setLoginKey(e.target.value)}
-                placeholder="Введите ключ"
-                className="mt-3 w-full rounded-3xl border border-white/10 bg-black/20 px-4 py-3 text-white outline-none focus:border-indigo-500/50"
-                autoComplete="current-password"
-              />
+              {DEMO_AUTO_PASSWORD ? (
+                <div
+                  className="mt-3 w-full rounded-3xl border border-emerald-500/20 bg-emerald-500/5 px-4 py-3 flex items-center justify-between gap-3 select-none"
+                  aria-label="Ключ доступа подготовлен"
+                >
+                  <span className="text-white tracking-[0.35em] font-mono text-sm" aria-hidden>
+                    {"•".repeat(Math.max(8, (loginKey || passwordFor(currentUser)).length))}
+                  </span>
+                  <span className="shrink-0 text-[10px] uppercase tracking-wider font-bold text-emerald-400/90 border border-emerald-500/30 bg-emerald-500/10 px-2 py-1 rounded-lg">
+                    готов
+                  </span>
+                </div>
+              ) : (
+                <input
+                  type="password"
+                  value={loginKey}
+                  onChange={(e) => setLoginKey(e.target.value)}
+                  placeholder="Введите ключ"
+                  className="mt-3 w-full rounded-3xl border border-white/10 bg-black/20 px-4 py-3 text-white outline-none focus:border-indigo-500/50"
+                  autoComplete="current-password"
+                />
+              )}
               {DEMO_AUTO_PASSWORD && (
                 <p className="mt-2 text-[11px] text-emerald-400/80">
-                  Ключ подставлен автоматически — можно сразу нажать «Войти».
+                  Ключ зафиксирован для демо — стереть нельзя. Выберите роль и нажмите «Войти».
                 </p>
               )}
             </div>
