@@ -7,7 +7,7 @@ export default defineConfig({
   plugins: [react()],
   base: isElectron ? "./" : "/",
   server: {
-    port: 5173,
+    port: 5180,
     strictPort: true,
     allowedHosts: true,
     proxy: { "/api": { target: "http://localhost:3002", changeOrigin: true } },
