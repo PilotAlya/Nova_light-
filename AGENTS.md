@@ -15,24 +15,20 @@ The update script installs both root and `backend/` dependencies. It does NOT ru
 - Frontend: `npm run dev` (from repo root). Open `http://localhost:5180/`.
 - Run each in its own long-lived process (e.g. separate tmux sessions); the frontend needs the backend on `3002` for live API data.
 
-### App faces / login (non-obvious)
-- `src/main.tsx` picks a "face" from `VITE_APP_FACE`: default is `v2`, an OPEN DEMO with no login wall — `http://localhost:5180/` loads straight into the dashboard. `VITE_APP_FACE=demo` (`npm run dev:demo`) shows the recruiter login screen instead.
-- The `v2` UI does not perform a real backend login, so no JWT is stored. Auth-protected endpoints like `/api/leads-v2` return `Требуется авторизация` without a token; the UI degrades gracefully to seed/localStorage data. This is expected — the CRM (e.g. creating a lead in the kanban) still works end-to-end in the UI.
-- To exercise the real backend directly, log in via `POST /api/auth/login` with a seeded user (`admin@nova.ru` / `demo123`) and send the returned token as `Authorization: Bearer <token>`.
+### App faces
+- `npm run dev` / `npm run dev:work` loads **Nova 2.0 work desk** (`VITE_APP_FACE=work`, light UI in `src/work/`). Open `http://localhost:5180/`. Needs backend on `3002`. Work API is `/api/work` (no JWT — local salon tool). Data is in SQLite tables `work_*` inside `backend/data/nova.db`.
+- `npm run dev:demo` — recruiter portfolio (login + Boris). Do not change that face while building work.
+- `npm run dev:v2` — previous dark dashboard. The v2 UI does not perform a real backend login; `/api/leads-v2` needs `Authorization: Bearer` from `POST /api/auth/login` (`admin@nova.ru` / `demo123`).
 
 ### Database
-- Migrations + seed: `cd backend && npm run setup` (migrate + seed; idempotent). Seed users all use password `demo123` (see `backend/seeds/01_demo_data.js`).
+- Migrations + seed: `cd backend && npm run setup` (migrate + seed; idempotent). After pulling work-app changes, run migrate so `work_*` tables exist: `cd backend && npm run migrate`.
+- Seed users all use password `demo123` (see `backend/seeds/01_demo_data.js`). Do not commit live cash/stock numbers if they are personal salon data.
 
 ### Lint / test / build (standard scripts, see `package.json`)
 - Lint: `npm run lint` (ESLint; note it runs with `--fix`). The repo currently has pre-existing lint errors/warnings unrelated to environment setup.
 - Test: `npm test` (Vitest + jsdom). NOTE: `src/test/Sidebar.test.tsx` has pre-existing failures (test expects tab `analytics` but the component now emits `reports`); this is test/code drift, not an environment problem.
-- Build: `npm run build` (`tsc -b && vite build`).
+- Build: `npm run build` uses current vite mode; work face: `npm run build:work`.
 
-### Nova 2.0 (tables first — do not start a new app yet)
-- Goal: a working salon desk, not a prettier portfolio. Keep the dark demo faces (`src/NovaDashboard.demo.tsx`, `src/NovaDashboard.v2.tsx`) unchanged.
-- Do **not** add a light-theme React face / `VITE_APP_FACE=work` until the salon Google Sheet has been used for 1–5 real workdays. Progress of that decision lives in `prototypes/nova-2.0/ХОД_РАБОТЫ.md` (step 6 = `пауза`).
-- Two documents, different jobs:
-  - Start here: `prototypes/nova-2.0/СЕЙЧАС.md` (one page: we are iterating the Google Sheet, currently **заявки**).
-  - Project steps: `prototypes/nova-2.0/ХОД_РАБОТЫ.md` (and optional Google copy; paste the URL into that file when it exists).
-  - Salon ops: CSV templates in `prototypes/nova-2.0/sheets/` to import into a **Google Sheet on the user's Drive**. How-to: `prototypes/nova-2.0/README.md`. Hardware orders: `prototypes/nova-2.0/ЗАЯВКИ.md` (one Фурнитура sheet → three supplier QUERY sheets).
-- `prototypes/nova-2.0/Nova_2.0_прототип.xlsx` is a structure backup only, not the working file. Do not commit cash/stock numbers.
+### Nova 2.0 work desk
+- Light salon app: Сегодня, Касса, Грузчики, Фурнитура, Заявки. Fittings with Info codes; suppliers Rondo/Ladya, Partner, Vasilyevo/Ortus. Orders are rows with `order_qty > 0` grouped by supplier.
+- Google/Excel prototypes in `prototypes/nova-2.0/` are archive only — the live product is the work app.

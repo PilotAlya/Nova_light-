@@ -22,6 +22,7 @@ import cashRoutes from "./routes/cash.js";
 import cleaningRoutes from "./routes/cleaning.js";
 import materialsRoutes from "./routes/materials.js";
 import backupRoutes from "./routes/backup.js";
+import workRoutes from "./routes/work.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const db = knex(knexConfig);
@@ -51,6 +52,7 @@ app.use("/api/cash", cashRoutes);
 app.use("/api/cleaning", cleaningRoutes);
 app.use("/api/materials", materialsRoutes);
 app.use("/api/backup", backupRoutes);
+app.use("/api/work", workRoutes);
 
 // Serve built frontend
 const distPath = path.join(__dirname, "../../dist");
