@@ -22,3 +22,6 @@ tsconfig.tsbuildinfo
 
 # Vercel artifact
 Nova_light-/
+
+# LibreOffice lock files
+.~lock.*

@@ -27,3 +27,11 @@ The update script installs both root and `backend/` dependencies. It does NOT ru
 - Lint: `npm run lint` (ESLint; note it runs with `--fix`). The repo currently has pre-existing lint errors/warnings unrelated to environment setup.
 - Test: `npm test` (Vitest + jsdom). NOTE: `src/test/Sidebar.test.tsx` has pre-existing failures (test expects tab `analytics` but the component now emits `reports`); this is test/code drift, not an environment problem.
 - Build: `npm run build` (`tsc -b && vite build`).
+
+### Nova 2.0 (tables first — do not start a new app yet)
+- Goal: a working salon desk, not a prettier portfolio. Keep the dark demo faces (`src/NovaDashboard.demo.tsx`, `src/NovaDashboard.v2.tsx`) unchanged.
+- Do **not** add a light-theme React face / `VITE_APP_FACE=work` until the salon Google Sheet has been used for 1–5 real workdays. Progress of that decision lives in `prototypes/nova-2.0/ХОД_РАБОТЫ.md` (step 6 = `пауза`).
+- Two documents, different jobs:
+  - Project steps: `prototypes/nova-2.0/ХОД_РАБОТЫ.md` (and optional Google copy; paste the URL into that file when it exists).
+  - Salon ops: CSV templates in `prototypes/nova-2.0/sheets/` to import into a **Google Sheet on the user's Drive**. How-to: `prototypes/nova-2.0/README.md`.
+- `prototypes/nova-2.0/Nova_2.0_прототип.xlsx` is a structure backup only, not the working file. Do not commit cash/stock numbers.
