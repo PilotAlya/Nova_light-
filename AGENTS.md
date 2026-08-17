@@ -32,6 +32,7 @@ The update script installs both root and `backend/` dependencies. It does NOT ru
 - Goal: a working salon desk, not a prettier portfolio. Keep the dark demo faces (`src/NovaDashboard.demo.tsx`, `src/NovaDashboard.v2.tsx`) unchanged.
 - Do **not** add a light-theme React face / `VITE_APP_FACE=work` until the salon Google Sheet has been used for 1–5 real workdays. Progress of that decision lives in `prototypes/nova-2.0/ХОД_РАБОТЫ.md` (step 6 = `пауза`).
 - Two documents, different jobs:
+  - Start here: `prototypes/nova-2.0/СЕЙЧАС.md` (one page: we are iterating the Google Sheet, currently **заявки**).
   - Project steps: `prototypes/nova-2.0/ХОД_РАБОТЫ.md` (and optional Google copy; paste the URL into that file when it exists).
-  - Salon ops: CSV templates in `prototypes/nova-2.0/sheets/` to import into a **Google Sheet on the user's Drive**. How-to: `prototypes/nova-2.0/README.md`.
+  - Salon ops: CSV templates in `prototypes/nova-2.0/sheets/` to import into a **Google Sheet on the user's Drive**. How-to: `prototypes/nova-2.0/README.md`. Hardware orders: `prototypes/nova-2.0/ЗАЯВКИ.md` (one Фурнитура sheet → three supplier QUERY sheets).
 - `prototypes/nova-2.0/Nova_2.0_прототип.xlsx` is a structure backup only, not the working file. Do not commit cash/stock numbers.
