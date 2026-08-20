@@ -51,7 +51,18 @@ function toApiItem(item: InventoryItem, zone: SkladType) {
   return { zone, name: item.name, category: item.category, unit: item.unit, quantity: item.quantity, supplier: item.supplier || null, note: item.notes || null, minThreshold: item.minThreshold };
 }
 
-function fromApiItem(a: any): InventoryItem {
+interface ApiInventoryItem {
+  id: number | string;
+  name: string;
+  category?: string;
+  quantity?: number | string;
+  unit?: string;
+  minThreshold?: number | string;
+  note?: string | null;
+  supplier?: string | null;
+}
+
+function fromApiItem(a: ApiInventoryItem): InventoryItem {
   return { id: String(a.id), name: a.name, category: a.category || "", quantity: Number(a.quantity) || 0, unit: a.unit || "шт", minThreshold: Number(a.minThreshold) || 0, notes: a.note || "", supplier: a.supplier || "" };
 }
 
@@ -66,13 +77,13 @@ const SkladEnhanced = () => {
   const [filter, setFilter] = useState<string>("all");
   const [form, setForm] = useState({ name: "", category: "Ручки", quantity: 0, unit: "шт", minThreshold: 1, notes: "", supplier: "" });
   const [customCategory, setCustomCategory] = useState("");
-  const [customUnit, setCustomUnit] = useState("");
+  const [customUnit] = useState("");
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
   const [detailItem, setDetailItem] = useState<InventoryItem | null>(null);
 
   const loadFromApi = async (zone: SkladType) => {
     try {
-      const data: any[] = await api.get(`/inventory?zone=${zone}`);
+      const data = await api.get<ApiInventoryItem[]>(`/inventory?zone=${zone}`);
       if (data && data.length > 0) {
         const mapped = data.map(fromApiItem);
         setBackupItems(prev => ({ ...prev, [zone]: mapped }));
@@ -94,6 +105,10 @@ const SkladEnhanced = () => {
       }
     })();
     return () => { mounted.current = false; };
+    // loadFromApi is recreated every render (closes over backupItems) and is not memoized;
+    // including it would refetch on every unrelated re-render. This effect should only
+    // run when the active warehouse zone changes.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [skladType]);
 
   const addToast = (text: string, type: ToastMessage["type"] = "info") => {
@@ -111,7 +126,7 @@ const SkladEnhanced = () => {
 
     if (editingId) {
       try {
-        const updated: any = await api.put(`/inventory/${editingId}`, apiItem);
+        const updated = await api.put<ApiInventoryItem>(`/inventory/${editingId}`, apiItem);
         const mapped = fromApiItem(updated);
         setItems(prev => prev.map(i => i.id === editingId ? mapped : i));
         setBackupItems(prev => ({ ...prev, [skladType]: backupItems[skladType].map(i => i.id === editingId ? mapped : i) }));
@@ -122,7 +137,7 @@ const SkladEnhanced = () => {
       addToast("✓ Товар обновлён", "success");
     } else {
       try {
-        const created: any = await api.post("/inventory", apiItem);
+        const created = await api.post<ApiInventoryItem>("/inventory", apiItem);
         const mapped = fromApiItem(created);
         setItems(prev => [...prev, mapped]);
         setBackupItems(prev => ({ ...prev, [skladType]: [...prev[skladType], mapped] }));

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Calculator, Plus, Trash2, Settings, ArrowRight, History, Store, MessageCircle, MapPin, Calendar } from "lucide-react";
+import { Plus, Trash2, Settings, ArrowRight, History, Store, MessageCircle, MapPin, Calendar } from "lucide-react";
 import { fetchPrices, savePrices, createOrder } from "../api/orders";
 
 interface Position {
@@ -117,7 +117,7 @@ const CalculatorV2: React.FC<CalculatorProps> = ({ onNavigateOrders, currentUser
       // Fallback: save to localStorage
       const saved = localStorage.getItem("nova_light_orders_fallback");
       const existing = saved ? JSON.parse(saved) : [];
-      const maxId = existing.length > 0 ? Math.max(...existing.map((o: any) => o.id)) : 0;
+      const maxId = existing.length > 0 ? Math.max(...existing.map((o: { id: number }) => o.id)) : 0;
       const fallbackOrder = { ...orderData, id: maxId + 1 };
       existing.push(fallbackOrder);
       localStorage.setItem("nova_light_orders_fallback", JSON.stringify(existing));
@@ -271,7 +271,7 @@ const CalculatorV2: React.FC<CalculatorProps> = ({ onNavigateOrders, currentUser
               ].map(({ label, key }) => (
                 <div key={key}>
                   <label className="text-[10px] uppercase tracking-widest text-slate-500 font-bold">{label}</label>
-                  <input type="number" name={key} value={(prices as any)[key]} onChange={handlePriceChange} className="mt-1.5 w-full bg-black/30 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-indigo-500/50" />
+                  <input type="number" name={key} value={prices[key as keyof typeof prices]} onChange={handlePriceChange} className="mt-1.5 w-full bg-black/30 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-indigo-500/50" />
                 </div>
               ))}
             </div>

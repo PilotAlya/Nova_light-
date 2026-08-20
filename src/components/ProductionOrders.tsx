@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Package, ClipboardList, Ruler, Wrench, Truck, ShieldCheck, ChevronRight, Clock, CheckCircle2, AlertTriangle } from 'lucide-react';
+import { Package, ClipboardList, Ruler, Wrench, Truck, ChevronRight } from 'lucide-react';
 import { Lead } from '../types';
 
 interface ProductionOrdersProps {
@@ -55,7 +55,7 @@ const ProductionOrders: React.FC<ProductionOrdersProps> = ({ leads }) => {
 
       {/* Pipeline stages */}
       <div className="space-y-8">
-        {stageOrder.map((status, stageIdx) => {
+        {stageOrder.map((status) => {
           const cfg = stageConfig[status];
           const items = groupedByStage[status] || [];
           if (items.length === 0) return null;

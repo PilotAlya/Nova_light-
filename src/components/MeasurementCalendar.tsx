@@ -1,5 +1,5 @@
 ﻿import React, { useState } from 'react';
-import { Ruler, Calendar, Clock, MapPin, CheckCircle2, XCircle } from 'lucide-react';
+import { Ruler, Calendar, Clock, MapPin, CheckCircle2 } from 'lucide-react';
 import type { Lead } from '../types';
 
 interface MeasurementCalendarProps { leads: Lead[] }

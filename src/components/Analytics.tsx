@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState } from 'react';
 import { TrendingUp, ChevronDown, ChevronRight, DollarSign, Users, Factory, BarChart3, TrendingDown } from 'lucide-react';
 import { Lead } from '../types';
 

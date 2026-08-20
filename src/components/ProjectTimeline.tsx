@@ -1,5 +1,5 @@
 ﻿import React, { useState } from 'react';
-import { Clock, CheckCircle2, Circle, Filter, Edit3, Trash2, Save, X } from 'lucide-react';
+import { Clock, CheckCircle2, Circle, Edit3, Trash2, Save, X } from 'lucide-react';
 import type { TimelineEntry } from '../types';
 
 interface ProjectTimelineProps {

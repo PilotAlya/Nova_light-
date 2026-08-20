@@ -1,7 +1,13 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { User, Phone, MapPin, ShoppingBag, DollarSign, MessageCircle, CheckCircle2, Clock, Calendar, Plus, ChevronRight, ChevronDown, CreditCard, ListTodo, X, Send } from 'lucide-react';
+import { User, Phone, MapPin, ShoppingBag, DollarSign, MessageCircle, CheckCircle2, Plus, ChevronRight, ChevronDown, CreditCard, ListTodo, X, Send } from 'lucide-react';
 import { api } from "../api/client";
 import { Lead } from '../types';
+import type {
+  Client as ApiClient,
+  Order as ApiOrder,
+  Payment as ApiPayment,
+  Communication as ApiCommunication,
+} from '../api/clients';
 
 interface PaymentRecord {
   id: string;
@@ -105,15 +111,15 @@ const FALLBACK_TASKS: DailyTask[] = [
   { id: "DT-004", text: "Подготовить спецификацию для ООО «Ремонт-Про»", leadId: "LD-009", assignee: "Дмитрий Волков", done: false },
 ];
 
-function transformApiClient(ac: any): Client {
+function transformApiClient(ac: ApiClient): Client {
   let total = 0;
-  const payments: PaymentRecord[] = (ac.orders || []).flatMap((o: any) =>
-    (o.payments || []).map((p: any) => {
+  const payments: PaymentRecord[] = (ac.orders || []).flatMap((o: ApiOrder) =>
+    (o.payments || []).map((p: ApiPayment) => {
       total += Number(p.amount) || 0;
-      return { id: String(p.id), date: p.paid_at?.slice(0, 10) || "", amount: Number(p.amount) || 0, type: p.type === "full" ? "full" : p.type === "prepayment" ? "prepayment" : "payment", note: p.note || "" };
+      return { id: String(p.id), date: p.paid_at?.slice(0, 10) || "", amount: Number(p.amount) || 0, type: p.type === "full" ? "full" : p.type === "prepayment" ? "prepayment" : "payment", note: p.note || "" } as PaymentRecord;
     })
   );
-  const communications: Communication[] = (ac.communications || []).map((c: any) => ({
+  const communications: Communication[] = (ac.communications || []).map((c: ApiCommunication) => ({
     date: c.created_at || "",
     text: c.message || "",
     from: c.direction === "incoming" ? "client" : "manager",
@@ -154,7 +160,7 @@ const Crm: React.FC<CrmProps> = ({ leads, teamMembers, currentUser, onLeadClick 
   useEffect(() => {
     (async () => {
       try {
-        const data: any[] = await api.get("/clients");
+        const data = await api.get<ApiClient[]>("/clients");
         if (data && data.length > 0) {
           const mapped = data.map(transformApiClient);
           setClients(mapped);
@@ -171,7 +177,7 @@ const Crm: React.FC<CrmProps> = ({ leads, teamMembers, currentUser, onLeadClick 
   const createClient = async () => {
     if (!addForm.name.trim()) return;
     try {
-      const created: any = await api.post("/clients", { name: addForm.name, phone: addForm.phone });
+      const created = await api.post<ApiClient>("/clients", { name: addForm.name, phone: addForm.phone });
       const mapped = transformApiClient(created);
       setClients(prev => [...prev, mapped]);
       setSelectedClientId(mapped.id);

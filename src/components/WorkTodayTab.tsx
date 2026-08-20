@@ -1,21 +1,20 @@
 import { useEffect, useMemo, useState } from "react";
-import { workApi, type WorkDay, type WorkTask } from "../api";
-import { isDone } from "../format";
+import { CheckCircle2 } from "lucide-react";
+import { workApi, type WorkDay, type WorkTask } from "../api/work";
 
-export default function TodayPage({
-  date,
-  day,
-  onReload,
-}: {
+function isDone(v: number | boolean): boolean {
+  return v === true || v === 1;
+}
+
+interface WorkTodayTabProps {
   date: string;
   day: WorkDay;
   onReload: () => Promise<void>;
-}) {
+}
+
+export default function WorkTodayTab({ date, day, onReload }: WorkTodayTabProps) {
   const [error, setError] = useState("");
-  const doneCount = useMemo(
-    () => day.tasks.filter((t) => isDone(t.done)).length,
-    [day.tasks],
-  );
+  const doneCount = useMemo(() => day.tasks.filter((t) => isDone(t.done)).length, [day.tasks]);
 
   async function toggle(task: WorkTask) {
     setError("");
@@ -38,18 +37,21 @@ export default function TodayPage({
   }
 
   return (
-    <section>
-      <h1 className="text-2xl font-semibold text-zinc-900">Сегодня</h1>
-      <p className="mt-1 text-sm text-zinc-500">
-        {date} · сделано {doneCount} из {day.tasks.length}. Данные пишутся в SQLite (`backend/data/nova.db`) и не пропадают после перезагрузки.
-      </p>
-      {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
-      <ol className="mt-6 space-y-3">
+    <div className="space-y-4">
+      <div className="flex items-center gap-3">
+        <CheckCircle2 size={18} className="text-indigo-400" />
+        <p className="text-sm text-slate-400">
+          {date} · сделано {doneCount} из {day.tasks.length}
+        </p>
+      </div>
+      {error && <p className="text-sm text-red-400">{error}</p>}
+      <ol className="space-y-3">
         {day.tasks.map((task) => (
           <TaskRow key={task.id} task={task} onToggle={() => toggle(task)} onComment={saveComment} />
         ))}
+        {day.tasks.length === 0 && <p className="text-sm text-slate-500 py-4 text-center">Задач на сегодня нет</p>}
       </ol>
-    </section>
+    </div>
   );
 }
 
@@ -68,16 +70,11 @@ function TaskRow({
   }, [task.comment]);
 
   return (
-    <li className="rounded-xl border border-zinc-200 bg-white p-4 shadow-sm">
+    <li className="glass-panel rounded-xl border border-white/5 p-4">
       <label className="flex cursor-pointer items-start gap-3">
-        <input
-          type="checkbox"
-          className="mt-1 h-4 w-4"
-          checked={isDone(task.done)}
-          onChange={onToggle}
-        />
-        <span className={isDone(task.done) ? "text-zinc-400 line-through" : "text-zinc-800"}>
-          <span className="mr-2 text-xs font-medium text-zinc-400">{task.sort_order}</span>
+        <input type="checkbox" className="mt-1 h-4 w-4 accent-indigo-500" checked={isDone(task.done)} onChange={onToggle} />
+        <span className={isDone(task.done) ? "text-slate-500 line-through" : "text-slate-200"}>
+          <span className="mr-2 text-xs font-bold text-slate-500">{task.sort_order}</span>
           {task.title}
         </span>
       </label>
@@ -88,7 +85,7 @@ function TaskRow({
           if (comment !== (task.comment || "")) void onComment(task, comment);
         }}
         placeholder="Комментарий, если что-то не так"
-        className="mt-3 w-full rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-2 text-sm text-zinc-800 outline-none focus:border-sky-400"
+        className="mt-3 w-full bg-black/30 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/50"
       />
     </li>
   );

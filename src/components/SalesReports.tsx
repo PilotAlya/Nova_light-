@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { TrendingUp, Users, DollarSign, Target, BarChart3, Eye, Download, ArrowUp, ArrowDown, Filter } from 'lucide-react';
+import { TrendingUp, Users, DollarSign, Target, BarChart3, Eye, ArrowUp, ArrowDown, Filter } from 'lucide-react';
 import { Lead, TeamMember } from '../types';
 
 interface SalesReportsProps {
@@ -76,7 +76,7 @@ const SalesReports: React.FC<SalesReportsProps> = ({ leads, team }) => {
         </div>
         <div className="flex gap-2 items-center">
           <Filter size={14} className="text-slate-500" />
-          <select value={period} onChange={e => setPeriod(e.target.value as any)}
+          <select value={period} onChange={e => setPeriod(e.target.value as 'all' | 'month' | 'quarter')}
             className="bg-black/40 border border-white/10 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-indigo-500/50">
             <option value="all">За всё время</option>
             <option value="month">За текущий месяц</option>

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, type FormEvent } from "react";
 import { Loader2 } from "lucide-react";
 
 const USERS = [
@@ -12,7 +12,7 @@ export default function LoginPage({ onLogin }: { onLogin: () => void }) {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
     setError("");
     setLoading(true);

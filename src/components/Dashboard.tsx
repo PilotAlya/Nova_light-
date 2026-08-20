@@ -1,23 +1,40 @@
 import React, { useState, useEffect, useMemo, useRef } from "react";
-import {
-  Calendar, Clock, TrendingUp, CreditCard, Package, AlertTriangle,
-  ArrowRight, CheckCircle, XCircle, Users, DollarSign, ShoppingBag,
-  Sparkles
-} from "lucide-react";
+import { Clock, Package, ArrowRight, CheckCircle, Users } from "lucide-react";
 import { Lead, TimelineEntry } from "../types";
 import { Order } from "../api/orders";
-import { CashShift, CashEntry, fetchTodayShift, fetchCleaning, CleaningItem } from "../api/cash";
+import { CashShift, fetchTodayShift, fetchCleaning, CleaningItem } from "../api/cash";
 
 interface DashboardProps {
   currentUser: string | null;
   leads: Lead[];
   projectTimeline: TimelineEntry[];
-  onNavigate: (tab: any) => void;
+  onNavigate: (tab: "orders" | "cleaning" | "wiki") => void;
 }
 
-const Dashboard: React.FC<DashboardProps> = ({ currentUser, leads, projectTimeline, onNavigate }) => {
+interface WidgetCardProps {
+  title: string;
+  icon: React.ReactNode;
+  children: React.ReactNode;
+  onClick?: () => void;
+  className?: string;
+}
+
+// Hoisted out of Dashboard: components defined inside a render body get
+// recreated (and remounted) on every re-render, which resets their state
+// and defeats React's reconciliation. See react-hooks/static-components.
+const WidgetCard = ({ title, icon, children, onClick, className = "" }: WidgetCardProps) => (
+  <div className={`glass-panel rounded-2xl p-5 border border-white/5 hover:border-indigo-500/20 transition-all ${onClick ? "cursor-pointer" : ""} ${className}`} onClick={onClick}>
+    <div className="flex items-center gap-2 mb-4">
+      <div className="p-1.5 rounded-lg bg-indigo-500/10 text-indigo-400">{icon}</div>
+      <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest">{title}</h3>
+    </div>
+    {children}
+  </div>
+);
+
+const Dashboard: React.FC<DashboardProps> = ({ currentUser, onNavigate }) => {
   const [orders, setOrders] = useState<Order[]>([]);
-  const [cashShift, setCashShift] = useState<CashShift | null>(null);
+  const [, setCashShift] = useState<CashShift | null>(null);
   const [cleaningTasks, setCleaningTasks] = useState<CleaningItem[]>([]);
   const [loading, setLoading] = useState(true);
   const seeded = useRef(false);
@@ -80,13 +97,6 @@ const Dashboard: React.FC<DashboardProps> = ({ currentUser, leads, projectTimeli
     fetchData();
   }, []);
 
-  const todayTasks = useMemo(() => {
-    const today = new Date().toISOString().split("T")[0];
-    return projectTimeline.filter(
-      t => t.member === currentUser && t.start === today && t.status !== "done"
-    );
-  }, [projectTimeline, currentUser]);
-
   const todayCleaning = useMemo(() => {
     const dayOfWeek = new Date().getDay() || 7;
     const tasks = cleaningTasks.filter(i => i.day_of_week === dayOfWeek);
@@ -108,15 +118,6 @@ const Dashboard: React.FC<DashboardProps> = ({ currentUser, leads, projectTimeli
       .sort((a, b) => new Date(a.deadline!).getTime() - new Date(b.deadline!).getTime())
       .slice(0, 10);
   }, [orders]);
-
-  const todayCash = useMemo(() => {
-    if (!cashShift) return { cashTotal: 0, cashlessTotal: 0, expenseTotal: 0 };
-    const entries = cashShift.entries || [];
-    const cashTotal = entries.filter(e => e.type === "sale" && e.method === "cash").reduce((s, e) => s + e.amount, 0);
-    const cashlessTotal = entries.filter(e => e.type === "sale" && e.method === "cashless").reduce((s, e) => s + e.amount, 0);
-    const expenseTotal = entries.filter(e => e.type === "expense").reduce((s, e) => s + e.amount, 0);
-    return { cashTotal, cashlessTotal, expenseTotal };
-  }, [cashShift]);
 
   const recentOrders = useMemo(() => {
     return [...orders].sort((a, b) => new Date(b.created_at || "").getTime() - new Date(a.created_at || "").getTime()).slice(0, 5);
@@ -150,16 +151,6 @@ const Dashboard: React.FC<DashboardProps> = ({ currentUser, leads, projectTimeli
       </div>
     );
   }
-
-  const WidgetCard = ({ title, icon, children, onClick, className = "" }: any) => (
-    <div className={`glass-panel rounded-2xl p-5 border border-white/5 hover:border-indigo-500/20 transition-all ${onClick ? "cursor-pointer" : ""} ${className}`} onClick={onClick}>
-      <div className="flex items-center gap-2 mb-4">
-        <div className="p-1.5 rounded-lg bg-indigo-500/10 text-indigo-400">{icon}</div>
-        <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest">{title}</h3>
-      </div>
-      {children}
-    </div>
-  );
 
   return (
     <div className="max-w-7xl mx-auto fade-in space-y-6">

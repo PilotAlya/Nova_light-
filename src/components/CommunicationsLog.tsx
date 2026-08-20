@@ -1,5 +1,5 @@
 ﻿import React, { useState } from 'react';
-import { MessageSquare, Search, Send } from 'lucide-react';
+import { MessageSquare, Search } from 'lucide-react';
 import type { Lead } from '../types';
 
 interface CommunicationsLogProps { leads: Lead[] }

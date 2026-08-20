@@ -97,7 +97,7 @@ const CleaningSchedule: React.FC = () => {
     }
   };
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => { load(); }, []); // eslint-disable-line react-hooks/exhaustive-deps -- run once on mount; load is redefined each render
 
   const taskNames = [...new Set(items.map(i => i.task_name))];
 
@@ -123,12 +123,6 @@ const CleaningSchedule: React.FC = () => {
 
   const handleDelete = async (id: number) => {
     await deleteCleaning(id);
-    load();
-  };
-
-  const toggleAssignee = async (item: CleaningItem) => {
-    const newAssignee = item.assignee ? "" : "Администратор";
-    await updateCleaning(item.id, { ...item, assignee: newAssignee } as any);
     load();
   };
 

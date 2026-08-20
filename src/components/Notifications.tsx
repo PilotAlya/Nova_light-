@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
-import { Bell, AlertTriangle, Clock, X, ChevronRight } from "lucide-react";
-import { fetchOrders, Order } from "../api/orders";
+import { Bell, AlertTriangle, Clock, ChevronRight } from "lucide-react";
+import { fetchOrders } from "../api/orders";
 
 interface NotificationsProps {
   onNavigate: (tab: string, orderId?: number) => void;

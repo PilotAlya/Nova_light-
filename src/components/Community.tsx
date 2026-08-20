@@ -55,7 +55,7 @@ const Community: React.FC<CommunityProps> = ({ team, ideas, setIdeas }) => {
           ].map(tab => (
             <button
               key={tab.id}
-              onClick={() => setActiveSection(tab.id as any)}
+              onClick={() => setActiveSection(tab.id as 'heroes' | 'feedback' | 'wishlist')}
               className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold transition-all uppercase tracking-widest ${
                 activeSection === tab.id 
                 ? "bg-indigo-600 text-white shadow-lg shadow-indigo-500/20" 

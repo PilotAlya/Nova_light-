@@ -1,8 +1,9 @@
 ﻿import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { Database, TrendingUp, BookOpen, Users, Bot, MessageSquare, ShieldAlert, Pin, PinOff, Search, X, ChevronDown, Calculator, ClipboardList, CreditCard, Sparkles, Package } from 'lucide-react';
+import { Database, TrendingUp, BookOpen, Users, Bot, MessageSquare, ShieldAlert, Pin, PinOff, Search, X, ChevronDown, Calculator, ClipboardList, ClipboardCheck, CreditCard, Sparkles, Package } from 'lucide-react';
 
+type NavTabKey = "dashboard" | "reports" | "materials" | "wiki" | "community" | "ai-navigator" | "chat" | "security" | "sklad" | "calculator" | "orders" | "cash" | "cleaning" | "work-desk";
 interface NavItem {
-  key: string;
+  key: NavTabKey;
   label: string;
   icon: React.ReactNode;
   badgeKey?: string;
@@ -15,7 +16,7 @@ interface NavGroup {
 
 interface SidebarProps {
   activeTab: string;
-  setActiveTab: (tab: any) => void;
+  setActiveTab: (tab: NavTabKey) => void;
   pinnedSections: string[];
   onTogglePin: (key: string) => void;
   accentColor: string;
@@ -37,6 +38,12 @@ const allGroups: NavGroup[] = [
       items: [
         { key: "calculator", label: "Калькулятор Л-ок", icon: <Calculator size={18} /> },
         { key: "orders", label: "Пайплайн задач", icon: <ClipboardList size={18} /> },
+      ],
+    },
+    {
+      label: "Смена",
+      items: [
+        { key: "work-desk", label: "Рабочий стол", icon: <ClipboardCheck size={18} /> },
       ],
     },
     {
@@ -71,7 +78,7 @@ const allGroups: NavGroup[] = [
     },
   ];
 
-const DESIGNER_KEYS = new Set(["dashboard", "calculator", "orders", "wiki", "sklad", "materials", "chat", "community", "ai-navigator", "reports", "cash", "cleaning", "security"]);
+const DESIGNER_KEYS = new Set(["dashboard", "calculator", "orders", "wiki", "sklad", "materials", "chat", "community", "ai-navigator", "cash", "cleaning"]);
 const getVisibleGroups = (role: string) =>
   role === "designer"
     ? allGroups.map((g) => ({ ...g, items: g.items.filter((n) => DESIGNER_KEYS.has(n.key)) })).filter((g) => g.items.length > 0)

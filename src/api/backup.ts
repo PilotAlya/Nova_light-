@@ -1,7 +1,7 @@
 import { api } from "./client";
 
 export interface BackupDump {
-  [table: string]: any[] | string;
+  [table: string]: unknown[] | string;
   _exported_at: string;
 }
 

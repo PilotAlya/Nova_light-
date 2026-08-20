@@ -29,7 +29,7 @@ describe('Sidebar', () => {
   });
 
   it('highlights active tab', () => {
-    render(<Sidebar {...defaultProps} activeTab="analytics" />);
+    render(<Sidebar {...defaultProps} activeTab="reports" />);
     const analyticsBtns = screen.getAllByText('Аналитика');
     const hasActive = analyticsBtns.some(btn => btn.closest('button')?.getAttribute('aria-current') === 'page');
     expect(hasActive).toBe(true);
@@ -39,6 +39,6 @@ describe('Sidebar', () => {
     const setActiveTab = vi.fn();
     render(<Sidebar {...defaultProps} setActiveTab={setActiveTab} />);
     fireEvent.click(screen.getAllByText('Аналитика')[0]);
-    expect(setActiveTab).toHaveBeenCalledWith('analytics');
+    expect(setActiveTab).toHaveBeenCalledWith('reports');
   });
 });

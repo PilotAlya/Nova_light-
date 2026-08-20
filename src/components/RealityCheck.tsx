@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { CheckSquare, AlertCircle, CheckCircle2, Clock, ChevronRight, Search, User, Plus, X, Edit3 } from 'lucide-react';
+import { CheckSquare, AlertCircle, CheckCircle2, ChevronRight, Search, User, Plus, X } from 'lucide-react';
 import { Lead } from '../types';
 
 interface RealityCheckProps {
@@ -153,7 +153,6 @@ const RealityCheck: React.FC<RealityCheckProps> = ({ leads, currentUser }) => {
     setQcData(prev => {
       const project = prev[leadId];
       if (!project) return prev;
-      const idx = project.steps[category].length;
       const newSteps = { ...project.steps };
       newSteps[category] = [...newSteps[category], { id: `custom_${Date.now()}`, label: newTaskLabel.trim(), completed: false }];
       return { ...prev, [leadId]: { ...project, steps: newSteps } };

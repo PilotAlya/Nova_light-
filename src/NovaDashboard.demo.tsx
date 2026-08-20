@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useMemo, useRef, useState } from "react";
+﻿import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   Calendar,
   CheckCircle,
@@ -14,7 +14,6 @@ import {
   TrendingUp,
   Users,
   X,
-  AlertTriangle,
   Edit3,
   Trash2,
   Check,
@@ -30,9 +29,7 @@ import Sidebar from "./components/Sidebar";
 import ThemeToggle from "./components/ThemeToggle";
 import AiNavigator from "./components/AiNavigator";
 import Wiki from "./components/Wiki";
-import RealityCheck from "./components/RealityCheck";
 import SkladEnhanced from "./components/SkladEnhanced";
-import Tasks from "./components/Tasks";
 import Community from "./components/Community";
 import BorisOnboarding from "./components/BorisOnboarding";
 import UserProfileModal from "./components/UserProfileModal";
@@ -51,6 +48,7 @@ import Notifications from "./components/Notifications";
 import ReportsPage from "./components/ReportsPage";
 import MaterialsPage from "./components/MaterialsPage";
 import GlobalSearch from "./components/GlobalSearch";
+import WorkDeskPage from "./components/WorkDeskPage";
 
 
 // Utils
@@ -94,6 +92,58 @@ type AiMessage = {
 /** Recruiter / portfolio demo: login UI + Boris onboarding, password prefilled. */
 const DEMO_AUTO_PASSWORD = true;
 
+const ALLOWED_USERS = ["Администратор", "Елена Морозова"];
+const MOCK_PASSWORDS: Record<string, string> = {
+  "Администратор": "nova2026",
+  "Елена Морозова": "elena2026",
+};
+const passwordFor = (user: string | null) =>
+  MOCK_PASSWORDS[user || "Администратор"] || MOCK_PASSWORDS["Администратор"];
+
+type ActiveTab =
+  | "dashboard"
+  | "reports"
+  | "materials"
+  | "wiki"
+  | "community"
+  | "ai-navigator"
+  | "chat"
+  | "security"
+  | "sklad"
+  | "calculator"
+  | "orders"
+  | "cash"
+  | "cleaning"
+  | "work-desk";
+
+const defaultInternQuestTasks: InternQuestTask[] = [
+  {
+    id: 1,
+    text: "Изучить базу знаний SketchUp",
+    hint: "Открой Wiki → Обучение ПО и смотри первую карточку.",
+    done: true,
+  },
+  {
+    id: 2,
+    text: "Найти Бориса и вызвать его",
+    hint: "Нажми на кнопку Бориса в шапке, чтобы открыть ИИ-чат.",
+    done: false,
+  },
+  {
+    id: 3,
+    text: "Сдать первый проект без самодеятельности",
+    hint: "Не добавляй новые модули вручную — используй стандартную библиотеку.",
+    done: false,
+  },
+  {
+    id: 4,
+    text: "Пройти первый чек-лист",
+    hint: "Проверь задачи по шагам — это поможет быстрее понять процесс.",
+    done: false,
+  },
+];
+
+
 export default function NovaLightDashboard() {
   const initialTeam: Record<string, TeamMember> = {
     admin: {
@@ -131,39 +181,21 @@ export default function NovaLightDashboard() {
   const [showMeasurementModal, setShowMeasurementModal] = useState(false);
   const [selectedLeadForMeasurement, setSelectedLeadForMeasurement] = useState<Lead | null>(null);
 
-  const [activeTab, setActiveTab] = useState<
-    | "dashboard"
-    | "reports"
-    | "materials"
-    | "wiki"
-    | "community"
-    | "ai-navigator"
-    | "chat"
-    | "security"
-    | "sklad"
-    | "calculator"
-    | "orders"
-    | "cash"
-    | "cleaning"
-  >(() => {
+  const [activeTab, setActiveTab] = useState<ActiveTab>(() => {
     if (typeof window === "undefined") return "dashboard";
-    return (localStorage.getItem("nova_light_start_tab") as any) || "dashboard";
+    return (localStorage.getItem("nova_light_start_tab") as ActiveTab) || "dashboard";
   });
 
   // ── Auth State ────────────────────────────────────
   const {
     isAuthenticated, setIsAuthenticated,
     currentUser, setCurrentUser,
-    blockedUsers, setBlockedUsers,
     loginKey, setLoginKey,
     loginError, setLoginError,
     loginLoading, setLoginLoading,
     sessions,
     handleKillSession,
-    keyLogin,
   } = useAuth(defaultUser);
-
-  const ALLOWED_USERS = ["Администратор", "Елена Морозова"];
 
   // Автоматическое переключение роли при входе
   useEffect(() => {
@@ -187,21 +219,13 @@ export default function NovaLightDashboard() {
     setIsTimelineDrawerOpen(false);
   }, false);
 
-  const MOCK_PASSWORDS: Record<string, string> = {
-    "Администратор": "nova2026",
-    "Елена Морозова": "elena2026",
-  };
-
-  const passwordFor = (user: string | null) =>
-    MOCK_PASSWORDS[user || "Администратор"] || MOCK_PASSWORDS["Администратор"];
-
   // Prefill access key so recruiters don't hunt for a password
   useEffect(() => {
     if (!DEMO_AUTO_PASSWORD || isAuthenticated) return;
     const user = currentUser && ALLOWED_USERS.includes(currentUser) ? currentUser : "Администратор";
     if (!currentUser || !ALLOWED_USERS.includes(currentUser)) setCurrentUser("Администратор");
     setLoginKey(passwordFor(user));
-  }, [isAuthenticated, currentUser]);
+  }, [isAuthenticated, currentUser, setCurrentUser, setLoginKey]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -265,14 +289,6 @@ export default function NovaLightDashboard() {
 
     // 3. Обновляем данные лида: статус на project, назначаем дизайнера
     const updatedLead = { ...lead, status: 'project' as const, assignee: { ...lead.assignee, name: bestDesigner.name } };
-
-    // 4. Обновляем статус дизайнера на busy и привязываем задачу
-    const finalSpecialists = updatedSpecialists.map(s => {
-      if (s.id === bestDesigner.id) {
-        return { ...s, status: 'busy' as const, currentTaskId: leadId };
-      }
-      return s;
-    });
 
     // 5. Сохраняем изменения в состоянии
     setLeads(prev => prev.map(l => l.id === leadId ? updatedLead : l));
@@ -523,7 +539,7 @@ export default function NovaLightDashboard() {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [selectedTimelineEntry, setSelectedTimelineEntry] = useState<TimelineEntry | null>(null);
   const [isTimelineDrawerOpen, setIsTimelineDrawerOpen] = useState(false);
-  const [showMyTasksOnly, setShowMyTasksOnly] = useState(() => {
+  const [showMyTasksOnly] = useState(() => {
     if (typeof window === "undefined") return false;
     return localStorage.getItem("nova_light_my_tasks_only") !== "false";
   });
@@ -552,57 +568,8 @@ export default function NovaLightDashboard() {
     { id: "T-018", member: "Администратор", task: "Контроль производства стенда шоурум", project: "Проект LD-014", leadId: "LD-014", start: "2026-06-17", end: "2026-06-30", status: "active", color: "rgba(34,197,94,0.85)" },
   ];
   const { projectTimeline, saveTimeline } = useTimeline({ defaultTimeline });
-  const [selectedTimelineProject, setSelectedTimelineProject] = useState("all");
-  const [draggedLeadId, setDraggedLeadId] = useState<string | null>(null);
-  const [kanbanFilter, setKanbanFilter] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
-
-  const handleDragStart = (e: React.DragEvent, id: string) => {
-    setDraggedLeadId(id);
-    e.dataTransfer.effectAllowed = "move";
-  };
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.dataTransfer.dropEffect = "move";
-  };
-  const handleDrop = (e: React.DragEvent, status: LeadStatus) => {
-    e.preventDefault();
-    if (!draggedLeadId) return;
-    addActivityLog(draggedLeadId, `Изменил(а) статус на «${getStatusLabel(status)}»`);
-    setLeads((prev) => prev.map((l) => (l.id === draggedLeadId ? { ...l, status } : l)));
-    apiUpdateLead(draggedLeadId, { status }).catch(() => {});
-    setDraggedLeadId(null);
-  };
-
-  const handleStatusChange = (id: string, newStatus: LeadStatus) => {
-    addActivityLog(id, `Изменил(а) статус на «${getStatusLabel(newStatus)}»`);
-    setLeads((prev) => prev.map((l) => (l.id === id ? { ...l, status: newStatus } : l)));
-    apiUpdateLead(id, { status: newStatus }).catch(() => {});
-
-    if (newStatus === "project") {
-      const specialists: Specialist[] = [
-        { id: '1', name: 'Иван (Замерщик)', role: 'measurer', status: 'available', efficiencyScore: 0.95, activeTasksLimit: 1, currentTaskId: null, avatar: '📐' },
-        { id: '2', name: 'Ольга (Дизайнер)', role: 'designer', status: 'busy', efficiencyScore: 0.95, activeTasksLimit: 3, currentTaskId: '1001', avatar: '🎨' },
-        { id: '3', name: 'Анна (Дизайнер)', role: 'designer', status: 'available', efficiencyScore: 0.85, activeTasksLimit: 2, currentTaskId: null, avatar: '👩‍🎨' },
-        { id: '4', name: 'Дмитрий (Дизайнер)', role: 'designer', status: 'busy', efficiencyScore: 0.70, activeTasksLimit: 4, currentTaskId: '1002', avatar: '👨‍🎨' },
-      ];
-      const { bestDesigner, logs } = runSmartRouting(specialists);
-      if (bestDesigner) {
-        addActivityLog(id, `Smart Routing: назначен дизайнер «${bestDesigner.name}» (R = ${logs.find(l => l.name === bestDesigner.name)?.R})`);
-        setLeads((prev) => prev.map((l) => {
-          if (l.id === id) {
-            const newAssignee = { ...l.assignee, name: bestDesigner.name };
-            apiUpdateLead(id, { assignee: newAssignee }).catch(() => {});
-            return { ...l, assignee: newAssignee };
-          }
-          return l;
-        }));
-      }
-      playChime();
-      setConfettiTrigger((prev) => prev + 1);
-    }
-  };
 
   const statusConfig: Record<
     LeadStatus,
@@ -655,63 +622,6 @@ export default function NovaLightDashboard() {
     };
     return labels[s];
   };
-
-  const statusProgress: Record<LeadStatus, number> = {
-    new: 0,
-    project: 25,
-    measure: 50,
-    production: 75,
-    mounting: 100,
-  };
-  const qcProgressMap = useMemo(() => {
-    const map: Record<string, number> = {};
-    for (const lead of leads) {
-      map[lead.id] = statusProgress[lead.status] ?? 0;
-    }
-    return map;
-  }, [leads]);
-
-  const filteredLeads = useMemo(() => {
-    let filtered = leads;
-    if (searchQuery.trim()) {
-      const q = searchQuery.toLowerCase();
-      filtered = filtered.filter((l) =>
-        l.name.toLowerCase().includes(q) ||
-        l.id.toLowerCase().includes(q) ||
-        l.source.toLowerCase().includes(q) ||
-        l.type.toLowerCase().includes(q) ||
-        l.material.toLowerCase().includes(q)
-      );
-    }
-    if (kanbanFilter === "mine") filtered = filtered.filter((l) => l.assignee.name === currentUser);
-    if (kanbanFilter === "overdue") filtered = filtered.filter((l) => isOverdue(l.deadline));
-    return filtered;
-  }, [leads, kanbanFilter, currentUser, searchQuery]);
-
-  const getByStatus = (s: LeadStatus) => filteredLeads.filter((l) => l.status === s);
-
-  const timelineRangeStart = new Date("2026-05-03");
-  const timelineRangeEnd = new Date("2026-05-31");
-  const timelineGridLabels = ["03–09 мая", "10–16 мая", "17–23 мая", "24–30 мая"];
-
-  const getTimelinePercent = (dateString: string) => {
-    const date = new Date(dateString);
-    const total = timelineRangeEnd.getTime() - timelineRangeStart.getTime();
-    const offset = date.getTime() - timelineRangeStart.getTime();
-    return Math.max(0, Math.min(100, (offset / total) * 100));
-  };
-
-  const formatShortDate = (dateString: string) =>
-    new Date(dateString).toLocaleDateString("ru-RU", { day: "2-digit", month: "short" });
-
-  const timelineProjects = ["all", ...Array.from(new Set(projectTimeline.map((item) => item.project)))];
-  const filteredTimeline = projectTimeline.filter((entry) => {
-    const byMember = showMyTasksOnly && currentUser ? entry.member === currentUser : true;
-    const byProject = selectedTimelineProject === "all" ? true : entry.project === selectedTimelineProject;
-    return byMember && byProject;
-  });
-
-  const isTimelineEntryOverdue = (entry: TimelineEntry) => new Date(entry.end) < new Date() && entry.status !== "done";
 
   const isAdmin = currentUser === "Администратор";
   const currentUserRole = currentUser
@@ -930,9 +840,9 @@ export default function NovaLightDashboard() {
       if (updated.source === "Другое" && updated.sourceCustom) {
         updated.source = updated.sourceCustom;
       }
-      delete (updated as any).materialCustom;
-      delete (updated as any).typeCustom;
-      delete (updated as any).sourceCustom;
+      delete updated.materialCustom;
+      delete updated.typeCustom;
+      delete updated.sourceCustom;
       const changes: string[] = [];
       if (editLeadData.material !== updated.material) changes.push(`материал на «${updated.material}»`);
       if (editLeadData.type !== updated.type) changes.push(`тип на «${updated.type}»`);
@@ -969,34 +879,10 @@ export default function NovaLightDashboard() {
     deadline: "",
   });
 
-  const defaultInternQuestTasks = [
-    {
-      id: 1,
-      text: "Изучить базу знаний SketchUp",
-      hint: "Открой Wiki → Обучение ПО и смотри первую карточку.",
-      done: true,
-    },
-    {
-      id: 2,
-      text: "Найти Бориса и вызвать его",
-      hint: "Нажми на кнопку Бориса в шапке, чтобы открыть ИИ-чат.",
-      done: false,
-    },
-    {
-      id: 3,
-      text: "Сдать первый проект без самодеятельности",
-      hint: "Не добавляй новые модули вручную — используй стандартную библиотеку.",
-      done: false,
-    },
-    {
-      id: 4,
-      text: "Пройти первый чек-лист",
-      hint: "Проверь задачи по шагам — это поможет быстрее понять процесс.",
-      done: false,
-    },
-  ];
-
-  const questStorageKey = (key: string) => `nova_light_intern_quest_${currentUser || "guest"}_${key}`;
+  const questStorageKey = useCallback(
+    (key: string) => `nova_light_intern_quest_${currentUser || "guest"}_${key}`,
+    [currentUser]
+  );
 
   const [internQuestTasks, setInternQuestTasks] = useState<InternQuestTask[]>(() => {
     if (typeof window === "undefined") return defaultInternQuestTasks;
@@ -1009,10 +895,6 @@ export default function NovaLightDashboard() {
     const saved = localStorage.getItem(questStorageKey("visible"));
     return saved === null ? true : saved === "true";
   });
-
-  const internQuestProgress = Math.round(
-    (internQuestTasks.filter((task) => task.done).length / internQuestTasks.length) * 100,
-  );
 
   useEffect(() => {
     if (typeof window === "undefined" || !currentUser) return;
@@ -1028,22 +910,13 @@ export default function NovaLightDashboard() {
         setInternQuestTasks(defaultInternQuestTasks);
       }
     }
-  }, [currentUser]);
+  }, [currentUser, questStorageKey]);
 
   useEffect(() => {
     if (typeof window === "undefined" || !currentUser) return;
     localStorage.setItem(questStorageKey("visible"), showInternQuest.toString());
     localStorage.setItem(questStorageKey("tasks"), JSON.stringify(internQuestTasks));
-  }, [currentUser, internQuestTasks, showInternQuest]);
-
-  const questCompleted = internQuestProgress === 100;
-
-  const toggleInternQuestTask = (taskId: number) => {
-    setInternQuestTasks((prev) => {
-      const next = prev.map((task) => (task.id === taskId ? { ...task, done: !task.done } : task));
-      return next;
-    });
-  };
+  }, [currentUser, internQuestTasks, showInternQuest, questStorageKey]);
 
   const addActivityLog = (leadId: string, action: string) => {
     setLeads((prev) => {
@@ -1081,30 +954,6 @@ export default function NovaLightDashboard() {
     setShowNewOrderModal(false);
     setActiveTab("orders");
     setNewOrderForm({ name: "", phone: "", type: "Кухня", budget: "", material: "ЛДСП EGGER", customMaterial: "", source: "Сайт", customType: "", customSource: "", contactMethod: "WhatsApp", assigneeKey: "denis", deadline: "" });
-  };
-
-  const handleQuickCreate = async (status: LeadStatus, name: string, type: string, phone?: string) => {
-    const newLead = {
-      name,
-      phone: phone || "",
-      contactMethod: "WhatsApp",
-      source: "Сайт",
-      status,
-      type,
-      budget: "—",
-      material: "—",
-      deadline: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10),
-      assignee: team["sergey"],
-      messages: [],
-      activityLog: [{ timestamp: new Date().toLocaleString("ru-RU"), action: `Создал(а) лид через быстрый ввод`, user: currentUser || "Система" }],
-    };
-    try {
-      const created = await createLead(newLead);
-      setLeads((prev) => [...prev, created]);
-    } catch {
-      const fallbackId = `LD-${String(leads.length + 100).padStart(3, "0")}`;
-      setLeads((prev) => [...prev, { ...newLead, id: fallbackId }]);
-    }
   };
 
   // ── Wiki ──────────────────────────────────────────────
@@ -1521,9 +1370,6 @@ export default function NovaLightDashboard() {
 
   const [timelineEditData, setTimelineEditData] = useState<TimelineEntry | null>(null);
   useEffect(() => { if (selectedTimelineEntry) setTimelineEditData(selectedTimelineEntry); }, [selectedTimelineEntry]);
-  const statusOptions: TimelineEntry["status"][] = ["planned", "active", "done"];
-  const statusLabels: Record<TimelineEntry["status"], string> = { planned: "Запланировано", active: "В работе", done: "Завершено" };
-
   const renderTimelineDrawer = () => {
     if (!selectedTimelineEntry || !timelineEditData) return null;
 
@@ -1721,10 +1567,10 @@ export default function NovaLightDashboard() {
             </div>
             <div className="flex gap-4">
               {isAuthenticated && (
-                <GlobalSearch leads={leads} onNavigate={(tab) => setActiveTab(tab as any)} />
+                <GlobalSearch leads={leads} onNavigate={(tab) => setActiveTab(tab as ActiveTab)} />
               )}
               {isAuthenticated && (
-                <Notifications onNavigate={(tab) => setActiveTab(tab as any)} />
+                <Notifications onNavigate={(tab) => setActiveTab(tab as ActiveTab)} />
               )}
               {isAuthenticated && (
                 <button 
@@ -1830,6 +1676,7 @@ export default function NovaLightDashboard() {
           {activeTab === "reports" && <ReportsPage />}
           {activeTab === "cash" && <CashPage currentUserName={currentUser} />}
           {activeTab === "cleaning" && <CleaningSchedule />}
+          {activeTab === "work-desk" && <WorkDeskPage />}
           {renderLeadDrawer()}
           {renderTimelineDrawer()}
         </div>

@@ -31,6 +31,34 @@ const initialGeneralMessages = [
 
 type ChatType = "general" | "saved" | string;
 
+interface SpeechRecognitionResultLike {
+  0: { transcript: string };
+}
+
+interface SpeechRecognitionEventLike {
+  results: ArrayLike<SpeechRecognitionResultLike>;
+}
+
+interface SpeechRecognitionLike {
+  lang: string;
+  continuous: boolean;
+  interimResults: boolean;
+  onresult: ((event: SpeechRecognitionEventLike) => void) | null;
+  onend: (() => void) | null;
+  onerror: (() => void) | null;
+  start: () => void;
+  stop: () => void;
+}
+
+interface SpeechRecognitionCtorLike {
+  new (): SpeechRecognitionLike;
+}
+
+type SpeechWindow = typeof window & {
+  SpeechRecognition?: SpeechRecognitionCtorLike;
+  webkitSpeechRecognition?: SpeechRecognitionCtorLike;
+};
+
 const TeamChat: React.FC<TeamChatProps> = ({ currentUser, teamMembers, formatTime, isAdmin }) => {
   const memberKeys = Object.keys(teamMembers);
 
@@ -71,7 +99,7 @@ const TeamChat: React.FC<TeamChatProps> = ({ currentUser, teamMembers, formatTim
   const [showStickerPicker, setShowStickerPicker] = useState(false);
   const teamChatEndRef = useRef<HTMLDivElement | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
-  const recognitionRef = useRef<any>(null);
+  const recognitionRef = useRef<SpeechRecognitionLike | null>(null);
   const [isRecording, setIsRecording] = useState(false);
   const [chatAttachments, setChatAttachments] = useState<{ name: string; url: string; type: string }[]>([]);
   const [showMemberList, setShowMemberList] = useState(false);
@@ -174,19 +202,19 @@ const TeamChat: React.FC<TeamChatProps> = ({ currentUser, teamMembers, formatTim
   };
 
   const startRecording = async () => {
-    const SpeechRecognition =
-      (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-    if (!SpeechRecognition) {
+    const speechWindow = window as SpeechWindow;
+    const SpeechRecognitionCtor = speechWindow.SpeechRecognition || speechWindow.webkitSpeechRecognition;
+    if (!SpeechRecognitionCtor) {
       alert("Ваш браузер не поддерживает распознавание речи. Используйте Chrome.");
       return;
     }
-    const recognition = new SpeechRecognition();
+    const recognition = new SpeechRecognitionCtor();
     recognition.lang = "ru-RU";
     recognition.continuous = false;
     recognition.interimResults = true;
-    recognition.onresult = (event: any) => {
-      const transcript = Array.from(event.results as any[])
-        .map((r: any) => r[0].transcript)
+    recognition.onresult = (event) => {
+      const transcript = Array.from(event.results)
+        .map((r) => r[0].transcript)
         .join("");
       setNewTeamMessage(transcript);
     };

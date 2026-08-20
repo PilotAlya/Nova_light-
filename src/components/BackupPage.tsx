@@ -23,7 +23,7 @@ const BackupPage: React.FC = () => {
       URL.revokeObjectURL(url);
       setLastExport(new Date().toLocaleString("ru-RU"));
       setResult({ type: "success", message: `Резервная копия создана (${Object.keys(dump).length} таблиц)` });
-    } catch (e) {
+    } catch {
       setResult({ type: "error", message: "Ошибка при создании бэкапа" });
     }
     setExporting(false);
@@ -49,7 +49,7 @@ const BackupPage: React.FC = () => {
       } else {
         setResult({ type: "error", message: `Ошибки: ${res.errors.join("; ")}` });
       }
-    } catch (e) {
+    } catch {
       setResult({ type: "error", message: "Ошибка при восстановлении: неверный формат файла" });
     }
     setImporting(false);

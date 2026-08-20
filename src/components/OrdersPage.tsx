@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef } from "react";
-import { ClipboardList, ArrowLeft, Plus, Store, MessageCircle, Calendar, MapPin, Clock, CheckCircle2, Scissors, Layers, Package, Search, History, X, ArrowRight, ChevronRight, ListChecks, Briefcase, CreditCard, FileText, HelpCircle, Trash2 } from "lucide-react";
-import { fetchOrders, createOrder, updateOrder, Order } from "../api/orders";
+import { ClipboardList, ArrowLeft, Plus, Store, MessageCircle, Calendar, MapPin, Clock, CheckCircle2, Scissors, Package, Search, History, X, ArrowRight, ChevronRight, Briefcase, CreditCard, FileText, HelpCircle, Trash2 } from "lucide-react";
+import { fetchOrders, updateOrder, Order } from "../api/orders";
 
 interface OrdersPageProps {
   onNavigateCalculator: () => void;
@@ -69,11 +69,21 @@ const formatOrderId = (id: number) => {
   return `Л/${String(id).padStart(3, "0")}/${year}`;
 };
 
+const SEED_ORDERS: Order[] = [
+  { id: 1, client_name: "Иванов Алексей", phone: "+7 (999) 111-11-11", source: "салон", material: "ЛДСП Дуб Сонома", status: "новый", payment_status: "не оплачено", total_cost: 15000, positions_json: "[]", deadline: "2026-06-20", created_at: "2026-06-10T09:00:00", updated_at: "2026-06-10T09:00:00", responsible: "Сергей Кузнецов", pickup_location: "салон РЭЛАН" },
+  { id: 2, client_name: "Петрова Мария", phone: "+7 (999) 222-22-22", source: "сайт", material: "ЛДСП Белый монохром", status: "утверждён", payment_status: "предоплата", total_cost: 22000, positions_json: "[]", deadline: "2026-06-22", created_at: "2026-06-08T10:30:00", updated_at: "2026-06-11T14:00:00", responsible: "Елена Морозова", pickup_location: "салон РЭЛАН" },
+  { id: 3, client_name: "Сидоров Павел", phone: "+7 (999) 333-33-33", source: "звонок", material: "ЛДСП Серый графит", status: "в сборке", payment_status: "оплачено", total_cost: 18500, positions_json: "[]", deadline: "2026-06-18", created_at: "2026-06-05T11:00:00", updated_at: "2026-06-12T09:00:00", responsible: "Дмитрий Волков", pickup_location: "цех" },
+  { id: 4, client_name: "Козлова Ольга", phone: "+7 (999) 444-44-44", source: "реклама", material: "ЛДСП Ясень шимо", status: "готов к выдаче", payment_status: "оплачено", total_cost: 31000, positions_json: "[]", deadline: "2026-06-15", created_at: "2026-06-02T14:00:00", updated_at: "2026-06-13T10:00:00", responsible: "Елена Морозова", pickup_location: "салон РЭЛАН" },
+  { id: 5, client_name: "ООО «Ремонт-Про»", phone: "+7 (999) 555-55-55", source: "звонок", material: "ЛДСП Дуб кантри", status: "выдан", payment_status: "оплачено", total_cost: 45000, positions_json: "[]", deadline: "2026-06-10", created_at: "2026-05-28T08:00:00", updated_at: "2026-06-10T16:00:00", responsible: "Сергей Кузнецов", pickup_location: "доставка" },
+  { id: 6, client_name: "Смирнов Игорь", phone: "+7 (999) 666-66-66", source: "сайт", material: "ЛДСП Белый монохром", status: "новый", payment_status: "не оплачено", total_cost: 0, positions_json: "[]", deadline: "2026-06-25", created_at: "2026-06-13T08:30:00", updated_at: "2026-06-13T08:30:00", responsible: "Дмитрий Волков", pickup_location: "салон РЭЛАН" },
+  { id: 7, client_name: "Волков Дмитрий", phone: "+7 (999) 777-77-77", source: "реклама", material: "ЛДСП Дуб Сонома", status: "в сборке", payment_status: "предоплата", total_cost: 27000, positions_json: "[]", deadline: "2026-06-19", created_at: "2026-06-09T15:00:00", updated_at: "2026-06-12T11:00:00", responsible: "Сергей Кузнецов", pickup_location: "салон РЭЛАН" },
+];
+
 const OrdersPage: React.FC<OrdersPageProps> = ({ onNavigateCalculator, currentUserName }) => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [editId, setEditId] = useState<number | null>(null);
-  const [filterStatus, setFilterStatus] = useState<string>("all");
-  const [filterSource, setFilterSource] = useState<string>("all");
+  const [filterStatus] = useState<string>("all");
+  const [filterSource] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [showHistory, setShowHistory] = useState(false);
   const [editForm, setEditForm] = useState({ client_name: "", phone: "", source: "салон", material: "ЛДСП 16мм", payment_status: "предоплата", status: "новый" });
@@ -96,16 +106,6 @@ const OrdersPage: React.FC<OrdersPageProps> = ({ onNavigateCalculator, currentUs
   });
   const [draggedOrderId, setDraggedOrderId] = useState<number | null>(null);
   const seeded = useRef(false);
-
-  const SEED_ORDERS: Order[] = [
-    { id: 1, client_name: "Иванов Алексей", phone: "+7 (999) 111-11-11", source: "салон", material: "ЛДСП Дуб Сонома", status: "новый", payment_status: "не оплачено", total_cost: 15000, positions_json: "[]", deadline: "2026-06-20", created_at: "2026-06-10T09:00:00", updated_at: "2026-06-10T09:00:00", responsible: "Сергей Кузнецов", pickup_location: "салон РЭЛАН" },
-    { id: 2, client_name: "Петрова Мария", phone: "+7 (999) 222-22-22", source: "сайт", material: "ЛДСП Белый монохром", status: "утверждён", payment_status: "предоплата", total_cost: 22000, positions_json: "[]", deadline: "2026-06-22", created_at: "2026-06-08T10:30:00", updated_at: "2026-06-11T14:00:00", responsible: "Елена Морозова", pickup_location: "салон РЭЛАН" },
-    { id: 3, client_name: "Сидоров Павел", phone: "+7 (999) 333-33-33", source: "звонок", material: "ЛДСП Серый графит", status: "в сборке", payment_status: "оплачено", total_cost: 18500, positions_json: "[]", deadline: "2026-06-18", created_at: "2026-06-05T11:00:00", updated_at: "2026-06-12T09:00:00", responsible: "Дмитрий Волков", pickup_location: "цех" },
-    { id: 4, client_name: "Козлова Ольга", phone: "+7 (999) 444-44-44", source: "реклама", material: "ЛДСП Ясень шимо", status: "готов к выдаче", payment_status: "оплачено", total_cost: 31000, positions_json: "[]", deadline: "2026-06-15", created_at: "2026-06-02T14:00:00", updated_at: "2026-06-13T10:00:00", responsible: "Елена Морозова", pickup_location: "салон РЭЛАН" },
-    { id: 5, client_name: "ООО «Ремонт-Про»", phone: "+7 (999) 555-55-55", source: "звонок", material: "ЛДСП Дуб кантри", status: "выдан", payment_status: "оплачено", total_cost: 45000, positions_json: "[]", deadline: "2026-06-10", created_at: "2026-05-28T08:00:00", updated_at: "2026-06-10T16:00:00", responsible: "Сергей Кузнецов", pickup_location: "доставка" },
-    { id: 6, client_name: "Смирнов Игорь", phone: "+7 (999) 666-66-66", source: "сайт", material: "ЛДСП Белый монохром", status: "новый", payment_status: "не оплачено", total_cost: 0, positions_json: "[]", deadline: "2026-06-25", created_at: "2026-06-13T08:30:00", updated_at: "2026-06-13T08:30:00", responsible: "Дмитрий Волков", pickup_location: "салон РЭЛАН" },
-    { id: 7, client_name: "Волков Дмитрий", phone: "+7 (999) 777-77-77", source: "реклама", material: "ЛДСП Дуб Сонома", status: "в сборке", payment_status: "предоплата", total_cost: 27000, positions_json: "[]", deadline: "2026-06-19", created_at: "2026-06-09T15:00:00", updated_at: "2026-06-12T11:00:00", responsible: "Сергей Кузнецов", pickup_location: "салон РЭЛАН" },
-  ];
 
   useEffect(() => {
     fetchOrders()
@@ -184,7 +184,7 @@ const OrdersPage: React.FC<OrdersPageProps> = ({ onNavigateCalculator, currentUs
     // Save to localStorage fallback
     const saved = localStorage.getItem("nova_light_orders_fallback");
     const fallback = saved ? JSON.parse(saved) : [];
-    const idx = fallback.findIndex((o: any) => o.id === order.id);
+    const idx = fallback.findIndex((o: Order) => o.id === order.id);
     if (idx >= 0) fallback[idx] = { ...fallback[idx], status: toStatus };
     localStorage.setItem("nova_light_orders_fallback", JSON.stringify(fallback));
     try { await updateOrder(order.id, { status: toStatus, changed_by: currentUserName || "Администратор" }); } catch {}
@@ -195,7 +195,7 @@ const OrdersPage: React.FC<OrdersPageProps> = ({ onNavigateCalculator, currentUs
     setOrders(prev => prev.filter(o => o.id !== orderId));
     const saved = localStorage.getItem("nova_light_orders_fallback");
     const fallback = saved ? JSON.parse(saved) : [];
-    localStorage.setItem("nova_light_orders_fallback", JSON.stringify(fallback.filter((o: any) => o.id !== orderId)));
+    localStorage.setItem("nova_light_orders_fallback", JSON.stringify(fallback.filter((o: Order) => o.id !== orderId)));
     try { await (await import("../api/orders")).deleteOrder(orderId); } catch {}
   };
 
@@ -203,7 +203,7 @@ const OrdersPage: React.FC<OrdersPageProps> = ({ onNavigateCalculator, currentUs
     setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: toStatus } : o));
     const saved = localStorage.getItem("nova_light_orders_fallback");
     const fallback = saved ? JSON.parse(saved) : [];
-    const idx = fallback.findIndex((o: any) => o.id === orderId);
+    const idx = fallback.findIndex((o: Order) => o.id === orderId);
     if (idx >= 0) fallback[idx] = { ...fallback[idx], status: toStatus };
     localStorage.setItem("nova_light_orders_fallback", JSON.stringify(fallback));
     try { await updateOrder(orderId, { status: toStatus, changed_by: currentUserName || "Администратор" }); } catch {}
@@ -211,9 +211,6 @@ const OrdersPage: React.FC<OrdersPageProps> = ({ onNavigateCalculator, currentUs
 
   const editingOrder = orders.find(o => o.id === editId);
   const historyEntries: { timestamp: string; changed_by: string; fields: Record<string, { from: string; to: string }> }[] = editingOrder?.history || [];
-
-  const countBySource = (source: string) => orders.filter(o => o.source === source).length;
-  const countByStatus = (s: string) => orders.filter(o => o.status === s).length;
 
   return (
     <div className="max-w-6xl mx-auto fade-in space-y-6">

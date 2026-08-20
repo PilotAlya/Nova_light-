@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FileText, PlayCircle, Database, AlertTriangle, Lightbulb, Download, Package, Plus, Tag, BookOpen, X, Edit3, Save, MessageSquare, CreditCard, ChevronDown, Trash2 } from 'lucide-react';
+import { FileText, PlayCircle, AlertTriangle, Lightbulb, Package, Plus, X, Edit3, Save, MessageSquare, CreditCard, Trash2 } from 'lucide-react';
 import { loadData, saveData } from "../api/sync";
 
 interface WikiProps {
@@ -161,10 +161,10 @@ const DEFAULT_CONTENT: WikiContent = {
   <div class="bg-amber-500/10 border border-amber-500/20 rounded-2xl p-5 mt-6">
     <h4 class="text-sm font-bold text-amber-300 mb-2">Советы по работе в Pro100</h4>
     <ul class="space-y-1 text-sm text-slate-300">
-      <li>— Сохраняйте проект перед каждымmajor изменением</li>
+      <li>— Сохраняйте проект перед каждым важным изменением</li>
       <li>— Используйте слои для разделения элементов (корпус, фасад, фурнитура)</li>
       <li>— Экспорт в чертёж для замерщика: Файл → Печать → Масштаб 1:1</li>
-      <li>— Библиотеки хранятся в папке: C:\Program Files\Pro100\Libraries</li>
+      <li>— Библиотеки хранятся в папке: C:\\Program Files\\Pro100\\Libraries</li>
     </ul>
   </div>
 </div>`,
@@ -179,7 +179,7 @@ const SECTION_LABELS: Record<string, string> = {
   pro100: "Pro100 Модули",
 };
 
-const Wiki: React.FC<WikiProps> = ({ wikiSection, setWikiSection, borisAvatarStyle, bugsList, setBugsList, suggestionsList, setSuggestionsList, currentUserName }) => {
+const Wiki: React.FC<WikiProps> = ({ wikiSection, setWikiSection, bugsList, setBugsList, suggestionsList, setSuggestionsList, currentUserName }) => {
   const [showBugForm, setShowBugForm] = useState(false);
   const [bugForm, setBugForm] = useState({ title: "", solution: "", severity: "medium" });
   const [showSuggestionForm, setShowSuggestionForm] = useState(false);

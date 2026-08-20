@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { CreditCard, DollarSign, MinusCircle, Plus, X, Wallet, TrendingUp, ArrowUpRight, ArrowDownRight, Package } from "lucide-react";
+import { DollarSign, MinusCircle, Plus, X, Wallet, TrendingUp, ArrowUpRight, ArrowDownRight, Package } from "lucide-react";
 import { fetchTodayShift, openShift, closeShift, addEntry, deleteEntry, CashShift, CashEntry } from "../api/cash";
 
 interface CashPageProps {
@@ -59,7 +59,7 @@ const CashPage: React.FC<CashPageProps> = ({ currentUserName }) => {
     }
   };
 
-  useEffect(() => { loadToday(); }, []);
+  useEffect(() => { loadToday(); }, []); // eslint-disable-line react-hooks/exhaustive-deps -- run once on mount; loadToday is redefined each render
 
   const handleOpenShift = async () => {
     if (!shift) return;
@@ -148,7 +148,7 @@ const CashPage: React.FC<CashPageProps> = ({ currentUserName }) => {
     });
     const saved = localStorage.getItem("nova_light_cash_entries");
     if (saved) {
-      const fallback = JSON.parse(saved).filter((e: any) => e.id !== id);
+      const fallback = (JSON.parse(saved) as CashEntry[]).filter((e) => e.id !== id);
       localStorage.setItem("nova_light_cash_entries", JSON.stringify(fallback));
     }
     try { await deleteEntry(id); } catch {}

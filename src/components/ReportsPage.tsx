@@ -70,7 +70,6 @@ const DoughnutChart: React.FC<{ data: { label: string; value: number; color: str
 
 const ReportsPage: React.FC = () => {
   const [orders, setOrders] = useState<Order[]>([]);
-  const [activeChart, setActiveChart] = useState<"revenue" | "orders">("revenue");
 
   useEffect(() => {
     fetchOrders().then(setOrders).catch(() => {});

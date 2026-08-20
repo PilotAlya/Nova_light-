@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Package, Plus, Trash2, Edit3, ChevronDown, ChevronUp, ClipboardList, BarChart, BookOpen } from "lucide-react";
+import { Package, Plus, Trash2, Edit3, ChevronDown, ChevronUp, BookOpen } from "lucide-react";
 import { fetchMaterials, createMaterial, updateMaterial, deleteMaterial, consumeMaterial, fetchConsumption, Material, MaterialConsumption } from "../api/materials";
 import { fetchOrders, Order } from "../api/orders";
 
@@ -40,7 +40,7 @@ const MaterialsPage: React.FC = () => {
     }
   };
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => { load(); }, []); // eslint-disable-line react-hooks/exhaustive-deps -- run once on mount; load is redefined each render
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

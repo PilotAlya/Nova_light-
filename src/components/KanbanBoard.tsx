@@ -1,11 +1,19 @@
 import React, { useState } from 'react';
-import { Package, MessageSquare, Clock, Plus } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import { Lead, LeadStatus } from '../types';
-import { KanbanCard, KanbanTask } from './KanbanCard';
+import { KanbanCard } from './KanbanCard';
+
+interface KanbanStatusConfig {
+  label: string;
+  color: string;
+  bg: string;
+  colClass: string;
+  icon: React.ReactNode;
+}
 
 interface KanbanBoardProps {
   leads: Lead[];
-  statusConfig: Record<string, any>;
+  statusConfig: Record<LeadStatus, KanbanStatusConfig>;
   getByStatus: (status: LeadStatus) => Lead[];
   handleDragStart: (e: React.DragEvent, id: string) => void;
   handleDragOver: (e: React.DragEvent) => void;
@@ -14,11 +22,11 @@ interface KanbanBoardProps {
   setSelectedLead: (lead: Lead) => void;
   setIsDrawerOpen: (open: boolean) => void;
   isOverdue: (deadline: string) => boolean;
-  setActiveTab: (tab: any) => void;
+  setActiveTab: (tab: string) => void;
   borisAvatarStyle: React.CSSProperties;
   onQuickCreate: (status: LeadStatus, name: string, type: string, phone?: string) => void;
   formatPhone?: (val: string) => string;
-  onStatusChange: (id: string, newStatus: any) => void;
+  onStatusChange: (id: string, newStatus: LeadStatus) => void;
   qcProgressMap?: Record<string, number>;
 }
 
@@ -106,7 +114,7 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({
       </div>
 
       <div className="flex gap-6 h-[calc(100%-80px)] overflow-x-auto pb-4">
-        {(Object.entries(statusConfig) as Array<[LeadStatus, any]>).map(
+        {(Object.entries(statusConfig) as Array<[LeadStatus, KanbanStatusConfig]>).map(
           ([sk, cfg]) => (
             <div
               key={sk}
@@ -173,7 +181,7 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({
                             id: lead.id,
                             title: lead.name,
                             customer: lead.source,
-                            status: lead.status as any,
+                            status: lead.status,
                           }}
                           lead={lead}
                           onStatusChange={(id, newStatus) => onStatusChange(id, newStatus)}

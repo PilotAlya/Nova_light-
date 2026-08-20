@@ -5,7 +5,7 @@ export const useAudioChime = (): (() => void) => {
 
   const playChime = useCallback(() => {
     try {
-      const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const ctx = new (window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext)();
       ctxRef.current = ctx;
       const now = ctx.currentTime;
 

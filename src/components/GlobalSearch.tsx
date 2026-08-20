@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
-import { Search, X, ArrowRight, Package, ClipboardList, FileText, MessageCircle, Store } from "lucide-react";
+import { Search, X, ArrowRight, Package, ClipboardList, FileText } from "lucide-react";
 import { fetchOrders, Order } from "../api/orders";
 import { fetchMaterials, Material } from "../api/materials";
 import { Lead } from "../types";

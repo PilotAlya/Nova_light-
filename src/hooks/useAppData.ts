@@ -1,6 +1,40 @@
 ﻿import { useEffect, useState } from "react";
 import { getToken, setToken, api } from "../api/client";
-import type { Lead, TimelineEntry, TeamMember, Message, ActivityEntry } from "../types";
+import type { Lead, TimelineEntry, TeamMember } from "../types";
+
+interface ApiLeadRaw {
+  id: number | string;
+  title?: string;
+  name?: string;
+  phone?: string;
+  status?: string;
+  budget?: number | string;
+  deadline?: string;
+  material?: string;
+  type?: string;
+  type_custom?: string;
+  source?: string;
+  source_custom?: string;
+  assigned_to_name?: string;
+}
+
+interface ApiTimelineRaw {
+  id: number | string;
+  member?: { name?: string };
+  member_name?: string;
+  task: string;
+  lead_id?: number | string;
+  start_date: string;
+  end_date: string;
+  status: TimelineEntry["status"];
+  color?: string;
+}
+
+interface ApiUserRaw {
+  name: string;
+  avatar?: string;
+  role: string;
+}
 
 const MOCK_TEAM: Record<string, TeamMember> = {
   admin: { name: "Администратор", role: "Владелец / Директор", avatar: "https://i.pravatar.cc/150?u=admin" },
@@ -55,7 +89,7 @@ const NAME_TO_KEY: Record<string, string> = {
   "Андрей Сидоров": "andrey",
 };
 
-function apiLeadToApp(l: any, team: Record<string, TeamMember>): Lead {
+function apiLeadToApp(l: ApiLeadRaw, team: Record<string, TeamMember>): Lead {
   const teamEntry = Object.entries(team).find(([, v]) => v.name === l.assigned_to_name);
   const nameEntry = Object.entries(NAME_TO_KEY).find(([name]) => name === l.assigned_to_name);
   let member: TeamMember;
@@ -68,9 +102,9 @@ function apiLeadToApp(l: any, team: Record<string, TeamMember>): Lead {
   }
   return {
     id: `LD-${String(l.id).padStart(3, "0")}`,
-    name: l.title || l.name,
+    name: l.title || l.name || "",
     phone: l.phone || "",
-    status: (STATUS_MAP[l.status] || "new") as Lead["status"],
+    status: (STATUS_MAP[l.status || ""] || "new") as Lead["status"],
     budget: l.budget ? `${Number(l.budget).toLocaleString()} ₽` : "0 ₽",
     deadline: l.deadline || "",
     material: l.material || "ЛДСП EGGER",
@@ -85,7 +119,7 @@ function apiLeadToApp(l: any, team: Record<string, TeamMember>): Lead {
   };
 }
 
-function apiTimelineToApp(e: any, team: Record<string, TeamMember>): TimelineEntry {
+function apiTimelineToApp(e: ApiTimelineRaw, _team: Record<string, TeamMember>): TimelineEntry {
   return {
     id: `T-${String(e.id).padStart(3, "0")}`,
     member: e.member?.name || e.member_name || "—",
@@ -150,9 +184,9 @@ export function useAppData(): AppData {
       }
       try {
         const [apiUsers, apiLeads, apiTimeline] = await Promise.all([
-          api.get<any[]>("/users").catch(() => null),
-          api.get<any[]>("/leads").catch(() => null),
-          api.get<any[]>("/timeline").catch(() => null),
+          api.get<ApiUserRaw[]>("/users").catch(() => null),
+          api.get<ApiLeadRaw[]>("/leads").catch(() => null),
+          api.get<ApiTimelineRaw[]>("/timeline").catch(() => null),
         ]);
 
         if (cancelled) return;
@@ -183,8 +217,8 @@ export function useAppData(): AppData {
           setConnected(true);
         }
 
-      } catch (e: any) {
-        if (!cancelled) setError(e.message);
+      } catch (e) {
+        if (!cancelled) setError(e instanceof Error ? e.message : String(e));
       } finally {
         if (!cancelled) setLoading(false);
       }

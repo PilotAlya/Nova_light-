@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { FileText, FileSignature, Receipt, Plus, Eye, Download, Search, Filter, CheckCircle2, Clock, AlertTriangle, XCircle, Send, UserCheck } from 'lucide-react';
+import { FileText, FileSignature, Receipt, Eye, Download, Search, CheckCircle2, Clock, XCircle, Send, UserCheck } from 'lucide-react';
 import { Lead } from '../types';
 
 type DocType = 'kp' | 'contract' | 'invoice';
@@ -78,8 +78,8 @@ interface DocumentsProps {
   currentUserRole?: string;
 }
 
-const Documents: React.FC<DocumentsProps> = ({ leads, currentUser, currentUserRole }) => {
-  const [allDocs, setAllDocs] = useState(() => generateMockDocs(leads));
+const Documents: React.FC<DocumentsProps> = ({ leads, currentUserRole }) => {
+  const [allDocs] = useState(() => generateMockDocs(leads));
   const [activeType, setActiveType] = useState<DocType | 'all'>('all');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [search, setSearch] = useState('');
@@ -123,7 +123,7 @@ const Documents: React.FC<DocumentsProps> = ({ leads, currentUser, currentUserRo
           { key: 'contract', label: 'Договоры', count: counts.contract, color: 'text-amber-400' },
           { key: 'invoice', label: 'Счета', count: counts.invoice, color: 'text-emerald-400' },
         ].map(t => (
-          <button key={t.key} onClick={() => setActiveType(t.key as any)}
+          <button key={t.key} onClick={() => setActiveType(t.key as DocType | 'all')}
             className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all ${
               activeType === t.key ? 'bg-indigo-500/20 text-white shadow-sm' : 'text-slate-400 hover:text-white hover:bg-white/5'
             }`}>

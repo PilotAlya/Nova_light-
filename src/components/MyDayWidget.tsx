@@ -44,9 +44,10 @@ const getOverdueLeadsText = (count: number): string => {
 };
 
 export default function MyDayWidget({ currentUser, leads, projectTimeline, onLeadClick }: MyDayWidgetProps) {
+  const [showQuote, setShowQuote] = useState(false);
+
   if (!currentUser) return null;
 
-  const [showQuote, setShowQuote] = useState(false);
   const greeting = getTimeBasedGreeting();
   const quote = getDailyQuote();
 

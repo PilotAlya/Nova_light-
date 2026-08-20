@@ -114,7 +114,7 @@ export default function BorisOnboarding({
         audioRef.current.pause();
       }
     };
-  }, [step, isMuted]);
+  }, [step, isMuted]); // eslint-disable-line react-hooks/exhaustive-deps -- current derives from step; volume excluded so slider does not restart playback
 
   // Синхронизируем громкость при изменении слайдера
   useEffect(() => {

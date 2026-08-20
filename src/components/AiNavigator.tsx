@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Bot, X, Key, User, Loader2, Send, Sparkles } from 'lucide-react';
 
 interface AiMessage {

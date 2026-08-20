@@ -72,7 +72,7 @@ export function useAuth(defaultUser: string | null) {
       setIsAuthenticated(false);
       setCurrentUser(defaultUser);
     }
-  }, [blockedUsers, currentUser, isAuthenticated]);
+  }, [blockedUsers, currentUser, isAuthenticated, defaultUser]);
 
   return {
     isAuthenticated, setIsAuthenticated,

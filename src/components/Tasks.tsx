@@ -1,7 +1,6 @@
 import React, { useState, useRef } from 'react';
-import { CheckCircle2, Clock, Plus, X, User, AlertCircle, Calendar, Flag, GripVertical, Edit3, Trash2 } from 'lucide-react';
+import { CheckCircle2, Plus, X, User, Calendar, Flag, GripVertical, Edit3, Trash2 } from 'lucide-react';
 import { InlineTodoItem } from './InlineTodoItem';
-import { Lead, LeadStatus } from '../types';
 
 interface Task {
   id: string;
@@ -45,12 +44,6 @@ const statusLabels: Record<string, string> = {
   todo: "К выполнению",
   "in-progress": "В работе",
   done: "Готово",
-};
-
-const statusIcons: Record<string, React.ReactNode> = {
-  todo: <Clock size={12} />,
-  "in-progress": <AlertCircle size={12} />,
-  done: <CheckCircle2 size={12} />,
 };
 
 const emptyForm = { title: "", assignee: "Сергей Кузнецов", dueDate: "", priority: "medium" as Task["priority"], leadId: "", description: "" };

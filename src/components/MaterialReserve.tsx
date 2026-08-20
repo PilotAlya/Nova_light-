@@ -1,5 +1,5 @@
 ﻿import React from 'react';
-import { Package, Grid, Layers } from 'lucide-react';
+import { Package, Layers } from 'lucide-react';
 import type { Lead } from '../types';
 
 interface MaterialReserveProps { leads: Lead[] }
