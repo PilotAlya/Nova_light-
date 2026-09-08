@@ -8,7 +8,6 @@ import {
   MessageSquare,
   Package,
   Plus,
-  Search,
   Send,
   Settings,
   TrendingUp,
@@ -18,7 +17,6 @@ import {
   Trash2,
   Check,
   Clock,
-  Menu,
   Ruler,
 } from "lucide-react";
 import { useKeyboardShortcut } from "./hooks/useKeyboardShortcut";
@@ -26,6 +24,7 @@ import { useAudioChime } from "./hooks/useAudioChime";
 
 // Components
 import Sidebar from "./components/Sidebar";
+import BottomNav from "./components/BottomNav";
 import ThemeToggle from "./components/ThemeToggle";
 import AiNavigator from "./components/AiNavigator";
 import Wiki from "./components/Wiki";
@@ -568,8 +567,6 @@ export default function NovaLightDashboard() {
     { id: "T-018", member: "Администратор", task: "Контроль производства стенда шоурум", project: "Проект LD-014", leadId: "LD-014", start: "2026-06-17", end: "2026-06-30", status: "active", color: "rgba(34,197,94,0.85)" },
   ];
   const { projectTimeline, saveTimeline } = useTimeline({ defaultTimeline });
-  const [searchQuery, setSearchQuery] = useState("");
-  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
   const statusConfig: Record<
     LeadStatus,
@@ -1531,32 +1528,21 @@ export default function NovaLightDashboard() {
 
   return (
     <div className="flex h-screen bg-app text-slate-200">
-      <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} pinnedSections={pinnedSections} onTogglePin={togglePin} accentColor={accentColor} notificationCounts={notificationCounts} userRole={viewAsRole} mobileOpen={mobileSidebarOpen} onMobileClose={() => setMobileSidebarOpen(false)} />
+      <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} pinnedSections={pinnedSections} onTogglePin={togglePin} accentColor={accentColor} notificationCounts={notificationCounts} userRole={viewAsRole} />
 
         <main className="flex-1 flex flex-col overflow-hidden relative">
-          <header className="h-16 flex items-center justify-between px-8 z-10 mt-2">
-            <div className="flex items-center gap-4">
-              {/* Hamburger for mobile */}
-              <button
-                onClick={() => setMobileSidebarOpen(true)}
-                className="md:hidden w-10 h-10 rounded-full glass-panel flex items-center justify-center text-slate-400 hover:text-white transition-all"
-                aria-label="Открыть меню"
+          <header className="h-16 flex items-center justify-between px-4 md:px-8 z-10 mt-2">
+            <div className="flex items-center gap-2 md:hidden">
+              <div
+                className="w-8 h-8 rounded-lg flex items-center justify-center font-bold text-white text-sm shrink-0"
+                style={{ background: `linear-gradient(135deg, ${accentColor}, #a855f7)` }}
               >
-                <Menu size={18} />
-              </button>
-              <div className="relative w-80 group">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-400 transition-colors" size={16} />
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Поиск лидов по имени, id, источнику..."
-              className="w-full bg-black/20 border border-white/10 rounded-full py-2 pl-10 pr-4 text-sm focus:outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/50 transition-all text-white backdrop-blur-sm shadow-inner"
-            />
-          </div>
-          </div>
+                N
+              </div>
+              <span className="text-white font-bold text-sm truncate">Рэлан</span>
+            </div>
 
-          <div className="flex items-center gap-6">
+          <div className="flex items-center gap-3 sm:gap-6">
             <div className="text-right hidden md:block">
               <p className="text-white font-bold text-lg leading-none">
                 {formatTime(currentTime)}
@@ -1565,7 +1551,7 @@ export default function NovaLightDashboard() {
                 {currentTime.toLocaleDateString("ru-RU", { weekday: "long", day: "numeric", month: "short" })}
               </p>
             </div>
-            <div className="flex gap-4">
+            <div className="flex gap-2 sm:gap-4">
               {isAuthenticated && (
                 <GlobalSearch leads={leads} onNavigate={(tab) => setActiveTab(tab as ActiveTab)} />
               )}
@@ -1573,7 +1559,7 @@ export default function NovaLightDashboard() {
                 <Notifications onNavigate={(tab) => setActiveTab(tab as ActiveTab)} />
               )}
               {isAuthenticated && (
-                <button 
+                <button
                   onClick={() => setShowUserProfile(true)}
                   className="w-10 h-10 rounded-full glass-panel flex items-center justify-center text-white bg-white/10 border border-white/15 shadow-sm hover:border-indigo-500/50 transition-all overflow-hidden p-0"
                   title="Мой профиль"
@@ -1584,7 +1570,7 @@ export default function NovaLightDashboard() {
                <ThemeToggle theme={theme} onToggle={() => setTheme(theme === 'dark' ? 'light' : 'dark')} />
                <button
                  onClick={() => setActiveGuide(activeTab)}
-                 className="w-10 h-10 rounded-full glass-panel flex items-center justify-center text-white bg-white/10 border border-white/15 shadow-sm hover:text-white hover:bg-white/20 transition-all font-bold text-lg"
+                 className="hidden md:flex w-10 h-10 rounded-full glass-panel items-center justify-center text-white bg-white/10 border border-white/15 shadow-sm hover:text-white hover:bg-white/20 transition-all font-bold text-lg"
                  title="Гид по разделу"
                >
                  ?
@@ -1601,7 +1587,7 @@ export default function NovaLightDashboard() {
 
               <button
                 onClick={() => setActiveTab("calculator")}
-                className="bg-indigo-600 hover:bg-indigo-500 text-white force-white px-5 py-2 rounded-full text-sm font-medium transition-all shadow-[0_0_15px_rgba(79,70,229,0.4)] hover:shadow-[0_0_25px_rgba(79,70,229,0.6)] flex items-center gap-2"
+                className="hidden md:flex bg-indigo-600 hover:bg-indigo-500 text-white force-white px-5 py-2 rounded-full text-sm font-medium transition-all shadow-[0_0_15px_rgba(79,70,229,0.4)] hover:shadow-[0_0_25px_rgba(79,70,229,0.6)] items-center gap-2"
               >
                 <Plus size={16} /> <span className="text-white force-white">Рассчитать Л-ку</span>
               </button>
@@ -1609,7 +1595,7 @@ export default function NovaLightDashboard() {
           </div>
         </header>
 
-         <div className="flex-1 overflow-y-auto overflow-x-auto p-8 pt-4 z-10 scroll-smooth relative">
+         <div className="flex-1 overflow-y-auto overflow-x-auto p-4 md:p-8 pt-4 pb-24 md:pb-8 z-10 scroll-smooth relative">
           {activeTab === "dashboard" && (
             <Dashboard currentUser={currentUser} leads={leads} projectTimeline={projectTimeline} onNavigate={setActiveTab} />
           )}
@@ -1992,8 +1978,10 @@ export default function NovaLightDashboard() {
 
       </main>
 
+      <BottomNav activeTab={activeTab} setActiveTab={setActiveTab} userRole={viewAsRole} notificationCounts={notificationCounts} accentColor={accentColor} />
+
       {/* Floating assistant button + mini chat */}
-      <div className="fixed bottom-8 right-8 z-50 flex flex-col items-end">
+      <div className="fixed bottom-24 right-4 md:bottom-8 md:right-8 z-50 flex flex-col items-end">
         {showBorisChat && (
           <div className="w-80 glass-panel rounded-3xl shadow-2xl overflow-hidden mb-4 flex flex-col border border-amber-500/30">
             <div className="bg-amber-500/20 backdrop-blur-md p-4 flex justify-between items-center border-b border-amber-500/20">

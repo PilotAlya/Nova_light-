@@ -1,15 +1,15 @@
-﻿import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { Database, TrendingUp, BookOpen, Users, Bot, MessageSquare, ShieldAlert, Pin, PinOff, Search, X, ChevronDown, Calculator, ClipboardList, ClipboardCheck, CreditCard, Sparkles, Package } from 'lucide-react';
+﻿import React, { useState, useRef, useCallback } from 'react';
+import { Database, TrendingUp, BookOpen, Users, Bot, MessageSquare, ShieldAlert, Pin, PinOff, Search, ChevronDown, Calculator, ClipboardList, ClipboardCheck, CreditCard, Sparkles, Package } from 'lucide-react';
 
-type NavTabKey = "dashboard" | "reports" | "materials" | "wiki" | "community" | "ai-navigator" | "chat" | "security" | "sklad" | "calculator" | "orders" | "cash" | "cleaning" | "work-desk";
-interface NavItem {
+export type NavTabKey = "dashboard" | "reports" | "materials" | "wiki" | "community" | "ai-navigator" | "chat" | "security" | "sklad" | "calculator" | "orders" | "cash" | "cleaning" | "work-desk";
+export interface NavItem {
   key: NavTabKey;
   label: string;
   icon: React.ReactNode;
   badgeKey?: string;
 }
 
-interface NavGroup {
+export interface NavGroup {
   label: string;
   items: NavItem[];
 }
@@ -22,11 +22,9 @@ interface SidebarProps {
   accentColor: string;
   notificationCounts: Record<string, number>;
   userRole: string;
-  mobileOpen?: boolean;
-  onMobileClose?: () => void;
 }
 
-const allGroups: NavGroup[] = [
+export const allGroups: NavGroup[] = [
     {
       label: "Главная",
       items: [
@@ -79,36 +77,21 @@ const allGroups: NavGroup[] = [
   ];
 
 const DESIGNER_KEYS = new Set(["dashboard", "calculator", "orders", "wiki", "sklad", "materials", "chat", "community", "ai-navigator", "cash", "cleaning"]);
-const getVisibleGroups = (role: string) =>
+export const getVisibleGroups = (role: string) =>
   role === "designer"
     ? allGroups.map((g) => ({ ...g, items: g.items.filter((n) => DESIGNER_KEYS.has(n.key)) })).filter((g) => g.items.length > 0)
     : allGroups;
 
-const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, pinnedSections, onTogglePin, accentColor, notificationCounts, userRole, mobileOpen, onMobileClose }) => {
+const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, pinnedSections, onTogglePin, accentColor, notificationCounts, userRole }) => {
   const [navSearch, setNavSearch] = useState("");
   const [collapsedGroups, setCollapsedGroups] = useState<Record<string, boolean>>({});
   const navRef = useRef<HTMLDivElement>(null);
-  const drawerRef = useRef<HTMLElement>(null);
 
   const visibleGroups = getVisibleGroups(userRole);
 
   const toggleGroup = (label: string) => {
     setCollapsedGroups((prev) => ({ ...prev, [label]: !prev[label] }));
   };
-
-  // Focus trap + ESC for mobile drawer
-  useEffect(() => {
-    if (!mobileOpen || !drawerRef.current) return;
-    const firstFocusable = drawerRef.current.querySelector('button');
-    firstFocusable?.focus();
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && onMobileClose) {
-        onMobileClose();
-      }
-    };
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [mobileOpen, onMobileClose]);
 
   // Keyboard navigation with arrow keys
   const handleNavKeyDown = useCallback((e: React.KeyboardEvent, index: number, total: number) => {
@@ -135,7 +118,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, pinnedSectio
     return (
       <div key={n.key} className="group relative">
         <button
-          onClick={() => { setActiveTab(n.key); onMobileClose?.(); }}
+          onClick={() => setActiveTab(n.key)}
           onKeyDown={(e) => handleNavKeyDown(e, index, allItems.length)}
           role="menuitem"
           aria-current={isActive ? 'page' : undefined}
@@ -292,37 +275,6 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, pinnedSectio
             );
           })}
         </nav>
-      </aside>
-
-      {/* Mobile drawer overlay */}
-      {mobileOpen && (
-        <div
-          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 md:hidden"
-          onClick={onMobileClose}
-          aria-hidden="true"
-        />
-      )}
-
-      {/* Mobile drawer */}
-      <aside
-        ref={drawerRef}
-        role="dialog"
-        aria-modal="true"
-        aria-label="Навигационное меню"
-        className={`fixed top-0 left-0 h-full w-72 z-50 flex flex-col border-r border-white/5 bg-[#0b0c10] backdrop-blur-xl transition-transform duration-300 md:hidden ${
-          mobileOpen ? 'translate-x-0' : '-translate-x-full'
-        }`}
-      >
-        <div className="flex justify-end p-4">
-          <button
-            onClick={onMobileClose}
-            className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-slate-400 hover:text-white transition-colors"
-            aria-label="Закрыть меню"
-          >
-            <X size={16} />
-          </button>
-        </div>
-        {sidebarContent}
       </aside>
     </>
   );
