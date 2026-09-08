@@ -382,7 +382,7 @@ const SkladEnhanced = () => {
         </div>
       )}
 
-      <div className="fixed bottom-4 right-4 space-y-2 pointer-events-none">
+      <div className="fixed bottom-24 right-4 md:bottom-4 space-y-2 pointer-events-none">
         {toasts.map(toast => (
           <div key={toast.id} className={`px-4 py-3 rounded-lg text-white font-semibold flex items-center gap-2 ${toast.type === "success" ? "bg-emerald-600" : toast.type === "warning" ? "bg-yellow-600" : "bg-blue-600"}`}>
             <Package size={18} /> {toast.text}

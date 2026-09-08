@@ -59,7 +59,7 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   return (
     <ToastContext.Provider value={{ toasts, addToast, removeToast }}>
       {children}
-      <div className="fixed bottom-6 right-6 z-[999] flex flex-col gap-2 max-w-sm">
+      <div className="fixed bottom-24 right-4 md:bottom-6 md:right-6 z-[999] flex flex-col gap-2 max-w-sm">
         {toasts.map(t => (
           <div key={t.id} className={`fade-in flex items-start gap-3 px-4 py-3 rounded-2xl border backdrop-blur-lg ${colors[t.type]}`}>
             <div className={`mt-0.5 ${textColors[t.type]}`}>{icons[t.type]}</div>

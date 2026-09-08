@@ -271,6 +271,38 @@ body {
   background-color: rgba(59, 130, 246, 0.1) !important;
 }
 
+/* Light Theme - Mobile bottom navigation */
+[data-theme="light"] .mobile-bottom-nav {
+  background-color: rgba(255, 255, 255, 0.92) !important;
+  border-top: 1px solid rgba(0, 0, 0, 0.08) !important;
+}
+
+[data-theme="light"] .mobile-bottom-nav button {
+  color: #64748b !important;
+}
+
+[data-theme="light"] .mobile-bottom-nav button.active {
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .mobile-more-sheet {
+  background-color: #ffffff !important;
+  border-top: 1px solid rgba(0, 0, 0, 0.08) !important;
+}
+
+[data-theme="light"] .mobile-more-sheet h3 {
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .mobile-more-sheet .nav-row {
+  color: #475569 !important;
+}
+
+[data-theme="light"] .mobile-more-sheet .nav-row.active {
+  color: #0f172a !important;
+  background-color: rgba(59, 130, 246, 0.1) !important;
+}
+
 /* Light Theme - Icon and Text Color Overrides */
 [data-theme="light"] svg {
   color: inherit;
