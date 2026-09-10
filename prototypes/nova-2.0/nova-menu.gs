@@ -20,12 +20,12 @@ function addWebPart() {
     const name = sh.getRange(r, 2).getValue();
     const on = sh.getRange(r, 1).getValue();
     if (!on && !name) {
-      sh.getRange(r, 1).setValue(true);
+      sh.getRange(r, 1).setValue(1);
       sh.getRange(r, 2).setValue("Деталь");
       sh.getRange(r, 3).setValue(700);
       sh.getRange(r, 4).setValue(400);
       sh.getRange(r, 5).setValue(1);
-      sh.getRange(r, 6, r, 9).setValues([[true, false, false, false]]);
+      sh.getRange(r, 6, r, 9).setValues([[1, 0, 0, 0]]);
       sh.getRange(r, 1).activate();
       return;
     }
@@ -35,7 +35,7 @@ function addWebPart() {
 
 function clearWebParts() {
   const sh = SpreadsheetApp.getActive().getSheetByName("Кальк_веб");
-  sh.getRange("A6:A15").setValue(false);
+  sh.getRange("A6:A15").setValue(0);
 }
 
 function webToOrders() {
